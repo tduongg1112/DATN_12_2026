@@ -1,0 +1,36 @@
+# ---- Rác hệ điều hành ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# ---- Editor / IDE ----
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- Biến môi trường (phòng tuyến chung cho mọi service) ----
+# Mỗi service còn .gitignore riêng, đây là lớp bảo vệ bổ sung
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# ---- Dependency & build output (phòng khi thêm service mới) ----
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# ---- Log ----
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
