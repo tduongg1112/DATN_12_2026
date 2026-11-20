@@ -1,0 +1,109 @@
+# Điểm chưa chốt và quyết định
+
+> **Đây là nguồn sự thật cho câu hỏi "đã chốt chưa".** Claude không tự chọn phương án cho mục đang "Chưa chốt". Gặp điểm mới thì thêm vào đây với số tiếp theo.
+> Cột "Đề xuất" chỉ chép lại đề xuất **đã có trong tài liệu nguồn**, không phải quyết định.
+> Ký hiệu nguồn: **C4** = Chương 4 v0.2 (05/11) · **ERD-doc** = Phân tích Class & CSDL (08/11, sửa 19/11) · **ERD-png** = `Diagrams chuẩn/Entity Relationship Diagram.png` (19/11) · **UC-png** = `Diagrams chuẩn/UC Tổng quan.png` (18/11) · **SQL** = `04_Khoi_tao_CSDL_PostgreSQL.sql` (08/11) · **FL** = Function List v0.2 (26/10).
+> Mục gắn nhãn *[rà soát 20/11]* là điểm phát hiện khi đối chiếu chéo các nguồn lúc dựng workflow. Tài liệu gốc chưa ghi những điểm này.
+
+> **Chế độ build-first (20/11/2026):** Dương chốt các mục dưới đây để bắt đầu code. Mục "Đã chốt (20/11, build-first)" được dùng ngay. Toàn bộ sẽ được review lại ở giai đoạn test. Nguồn gốc ngoài repo (docx, SQL, ảnh ERD/UC) **chưa** được cập nhật theo các quyết định này (DC-12). Trạng thái "Hoãn" nghĩa là bản build này không làm, hoặc chưa cần chọn.
+
+**Cách đóng một mục:** điền cột "Quyết định", đổi trạng thái thành `Đã chốt (ngày)`, cập nhật specs, `data_model.md` và nguồn gốc (docx/SQL) cho khớp.
+
+## A. Nghiệp vụ (OQ)
+
+| Mã | Vấn đề | Nguồn | Đề xuất trong tài liệu | Ảnh hưởng | Người quyết | Quyết định | Trạng thái |
+|---|---|---|---|---|---|---|---|
+| OQ-01 | Thể hiện yêu cầu đăng nhập bằng tiền điều kiện hay bằng «include» Đăng nhập trên sơ đồ UC | C4 #1 | Tiền điều kiện. Hỏi ý GVHD | Chỉ báo cáo | Dương + GVHD | | Chưa chốt |
+| OQ-02 | Có xác minh email khi đăng ký không. Số lần sai và thời gian khoá | C4 #2, UC01 7b, 4a1 | Không bắt buộc xác minh. Khoá tạm 15 phút sau 5 lần sai (ERD-doc 4.1 đã dùng 5 lần/15 phút) | auth | Dương | Không xác minh email khi đăng ký. Sai mật khẩu 5 lần liên tiếp thì khoá đăng nhập bằng mật khẩu 15 phút. Hai giá trị để trong cấu hình | Đã chốt (20/11, build-first) |
+| OQ-03 | Chức năng quên mật khẩu | C4 #3; FL AUTH-05 (Could, OTP qua email, hiệu lực 5 phút) | Bổ sung vào luồng phụ UC01 nếu còn thời gian | auth | Dương | Hoãn AUTH-05 (quên mật khẩu). Làm sau khi xong Must + Should | Hoãn |
+| OQ-04 | Cập nhật hồ sơ và đổi mật khẩu có trong FL (AUTH-04, Should) nhưng chưa có trong UC01 *[rà soát 20/11]* | FL AUTH-04; C4 UC01 | — | auth | Dương | Làm AUTH-04 ngay trong `auth`: sửa họ tên, ảnh đại diện; đổi mật khẩu phải nhập mật khẩu cũ (FL AUTH-04). Tài khoản Google: OQ-27 | Đã chốt (20/11, build-first) |
+| OQ-05 | Chọn loại cây khi chẩn đoán là **bắt buộc hay tuỳ chọn**. Dùng một mô hình chung hay mỗi loại cây một mô hình | C4 #4, UC02 bước 7; FL Q1, DIAG-03; ERD-doc R6 | Mô hình chung, vẫn cho chọn cây để backend lọc lớp (FL). Nếu bắt buộc thì `diagnoses.crop_id` đổi thành NOT NULL | diagnosis, data_model, hợp đồng AI | Nhóm AI | Tạm theo FL: một mô hình chung, chọn loại cây là **tuỳ chọn**. `diagnoses.crop_id` giữ NULL; có chọn thì gửi `crop_code`. Không chọn thì loại cây hiển thị ở lịch sử và dashboard lấy theo `crop_id` của nhãn hạng 1. Nhóm AI xác nhận lại | Đã chốt (20/11, build-first) |
+| OQ-06 | **Giá trị ngưỡng độ tin cậy** (một ngưỡng chung hay theo từng cây) và thời gian chờ tối đa | C4 #5, UC02 12d, 10.1; FL Q2 | Nhóm AI đề xuất từ tập validation và ảnh thực địa. Thời gian chờ 15 giây. Để trong cấu hình | diagnosis, dashboard | Nhóm AI | Một ngưỡng chung cho mọi loại cây; thời gian chờ 15 giây; cả hai để trong cấu hình. **Giá trị ngưỡng: chờ nhóm AI** | Đã chốt một phần (20/11, build-first) |
+| OQ-07 | Trường "mức độ" hiểu là mức độ nguy hại của bệnh (lấy từ danh mục), không phải mức độ nhiễm trên lá | C4 #6 | Giữ cách hiểu này | diagnosis, history | Cả nhóm | Hoãn. Bản build dùng `diseases.severity` như `specs_diagnosis.md` BR-18 | Hoãn |
+| OQ-08 | Có cần trường ghi chú cho từng lượt tra cứu không | C4 #7; Bảng 4.6; ERD-doc mục 11 | Bỏ, vì đã có ghi chú chăm sóc ở UC04 | history, data_model | Dương | Bỏ. Dùng ghi chú chăm sóc của cây (UC04), không thêm cột | Đã chốt (20/11, build-first) |
+| OQ-09 | Có giữ nhắc kiểm tra lại không. **Kênh gửi** (trong ứng dụng, email, đẩy). Khung giờ gửi. Bật/tắt nhắc theo từng cây | C4 #8, UC04 9f; FL NOTI-02 (FCM, 6:00–20:00), NOTI-04 | Thông báo trong ứng dụng; email nếu kịp | my_plants, job nhắc việc | Dương | Giữ nhắc. Chỉ thông báo trong ứng dụng (không email, không đẩy), không khung giờ gửi. Bật/tắt nhắc theo từng cây (NOTI-04) hoãn | Đã chốt (20/11, build-first) |
+| OQ-10 | Quy tắc ưu tiên trên trang chủ (nổi bật, "Đang phổ biến" 30 ngày) và mục "Dành cho cây của bạn" | C4 #9, UC05 bước 2, 2a; FL LIB-03 | Làm phần nổi bật + đang phổ biến trước, cá nhân hoá sau | disease_library | Dương | Bệnh nổi bật trước, rồi bệnh "Đang phổ biến" (tiêu chí ở OQ-28), còn lại theo `published_at` giảm dần. Hoãn "Dành cho cây của bạn" | Đã chốt (20/11, build-first) |
+| OQ-11 | Có cần xuất báo cáo Excel/PDF không | C4 #10, UC07 5a | Excel là đủ | dashboard | Dương | Hoãn xuất báo cáo | Hoãn |
+| OQ-12 | Có thu thập sự đồng ý chia sẻ ảnh để cải thiện mô hình không (`allow_data_sharing`). Xem DC-01 | C4 #11, UC07 6.1; ERD-doc mục 11 (giữ) **nhưng** ERD-doc 4.1 đã gạch, ERD-png không có | Có, hỏi khi đăng ký hoặc trong trang hồ sơ (C4) | auth, dashboard, data_model | Dương | Bỏ ở bản build này (cùng DC-01). Bỏ dashboard BR-07; ADM-06 hoãn | Đã chốt (20/11, build-first) |
+| OQ-13 | Quản trị viên có quản lý người dùng (khoá tài khoản) không | C4 #12; FL ADM-05 (Could) | Không bắt buộc với phạm vi đồ án | — | Dương | | Chưa chốt |
+| OQ-14 | **Giữ hay bỏ "Đánh giá kết quả chẩn đoán"** (Đúng/Sai/Không chắc, bệnh đúng) | C4 #14 (đã gạch ở UC02, UC03); FL DIAG-07 (Should); **UC-png 18/11 vẫn vẽ «extend» Đánh giá**; ERD-png không có cột | Nếu giữ: thêm `feedback`, `correct_disease_id`, `feedback_at` vào `diagnoses` (ERD-doc mục 11, cách A). Nếu bỏ: bỏ chỉ số "Tỷ lệ đánh giá đúng", bỏ bước 5 UC07 và «extend» trên sơ đồ | diagnosis, history, dashboard, data_model | Cả nhóm | Bỏ ở bản build này. Bỏ chỉ số "Tỷ lệ đánh giá đúng", danh sách "bị đánh giá Sai" ở dashboard, trường "Đánh giá" của Bảng 4.6. «extend» trên UC-png sửa sau (DC-12) | Đã chốt (20/11, build-first) |
+| OQ-15 | Hệ thống có tự gợi ý lịch nhắc không (`source = SYSTEM`, dựa vào `diseases.recheck_days`). Có nhắc tưới, bón không. Xem DC-02 | C4 #15; ghi chú nhóm sau Bảng 4.6 ("thêm noti cho chẩn đoán lại, nhắc kiểm tra, tưới tiêu, phân bón…"); ERD-doc 4.8 | Có: hệ thống gợi ý, người dùng xác nhận; cần cập nhật luồng phụ UC04 | my_plants, diagnosis, data_model | Dương | Có. Hệ thống gợi ý, người dùng xác nhận thì mới tạo (`source = SYSTEM`): `RECHECK` theo `diseases.recheck_days` khi gắn kết quả `DISEASE` vào cây; `WATERING`, `FERTILIZING` theo `crops.watering_interval_days`, `fertilizing_interval_days` khi tạo cây | Đã chốt (20/11, build-first) |
+| OQ-16 | Chưa có UC nào cho người dùng **xem thông báo và đánh dấu đã đọc** | ERD-doc C1; FL NOTI-03 | Thêm luồng "Xem thông báo" vào UC04, hoặc tách UC riêng | my_plants | Dương | Thêm luồng "Xem thông báo" vào UC04 (`my_plants`): biểu tượng chuông có số chưa đọc, danh sách thông báo, đánh dấu đã đọc, bấm vào thì mở cây liên quan | Đã chốt (20/11, build-first) |
+| OQ-17 | Form loại cây có thêm trường "Mã lớp khoẻ mạnh" không | ERD-doc C2 | Thêm | catalog | Dương | Thêm trường "Mã lớp khoẻ mạnh" vào form loại cây, chọn từ danh sách nhãn của mô hình đang dùng | Đã chốt (20/11, build-first) |
+| OQ-18 | Bản demo chính suy luận trên server hay trên điện thoại | FL Q3; DIAG-09 (Could) | Server là luồng chính. Chạy trên điện thoại là Could, gắn với đề tài của Huy | diagnosis | Cả nhóm | | Chưa chốt |
+| OQ-19 | Nội dung cách phòng, cách trị lấy từ nguồn nào | FL Q6; ERD-doc 7.2 | Tài liệu của Cục BVTV hoặc trung tâm khuyến nông; Quản trị viên nhập và ghi nguồn | catalog | Cả nhóm | | Chưa chốt |
+| OQ-20 | Cập nhật đề cương cho khớp phạm vi đã thu hẹp | FL Q7 | Báo GVHD trước khi vẽ sơ đồ | Chỉ báo cáo | Cả nhóm + GVHD | | Chưa chốt |
+| OQ-21 | Đánh số hình, bảng theo chương hay liên tục | C4 #13 | Chỉnh khi ghép các chương | Chỉ báo cáo | Dương | | Chưa chốt |
+| OQ-22 | UC-png 18/11 có **3 tác nhân USER, MEMBER, ADMIN** (USER và ADMIN tổng quát hoá về MEMBER), còn C4 có 2 tác nhân. Theo sơ đồ thì ADMIN thừa kế mọi UC của MEMBER (chẩn đoán, cây trồng…) *[rà soát 20/11]* | UC-png; C4 4.2.2 | — | auth (phân quyền), mọi feature | Dương | Theo UC-png: ADMIN kế thừa mọi chức năng của USER, có thêm khu quản trị. CSDL vẫn 2 role. Sau khi đăng nhập ADMIN vẫn vào Dashboard (C4 5a). BR-G03 (chỉ thấy dữ liệu của mình) áp dụng cả với ADMIN | Đã chốt (20/11, build-first) |
+| OQ-23 | Lượt chẩn đoán `FAILED` hoặc `PROCESSING` có hiện trong lịch sử tra cứu không. Bảng 4.6 chỉ có 3 dạng kết quả *[rà soát 20/11]* | C4 UC02 10.1, Bảng 4.6; ERD-doc 4.10 | — | history, diagnosis | Dương | Lịch sử chỉ hiện lượt `COMPLETED`. Các chỉ số Bảng 4.12 chỉ đếm lượt `COMPLETED` | Đã chốt (20/11, build-first) |
+| OQ-24 | Xoá mềm lượt chẩn đoán **gần nhất** của một cây có làm đổi `health_status` của cây không *[rà soát 20/11]* | C4 UC03 8d; Bảng 4.8 | — | history, my_plants | Dương | Không đổi `health_status` khi xoá mềm hoặc hoàn tác | Đã chốt (20/11, build-first) |
+| OQ-25 | Chỉ số "Tổng số người dùng **đang hoạt động**" tính thế nào, khi bảng `users` không có cột trạng thái *[rà soát 20/11]* | C4 Bảng 4.12 | — | dashboard | Dương | Hoãn: bản build này chưa làm chỉ số "Tổng số người dùng" | Hoãn |
+| OQ-26 | "Báo Quản trị viên" khi mô hình trả `class_code` lạ: báo qua kênh nào *[rà soát 20/11]* | ERD-doc 6.5, 7.4 | — | diagnosis, dashboard | Dương | Ghi log mức ERROR và tạo `notifications` cho mọi ADMIN (`reminder_id = NULL`), không gửi trùng cho cùng một `class_code` | Đã chốt (20/11, build-first) |
+| OQ-27 | AUTH-04: tài khoản chỉ dùng Google (`password_hash` NULL) không có mật khẩu cũ để đổi. Quy tắc mật khẩu mới *[phát sinh 20/11]* | FL AUTH-04; ERD-doc 4.1 | — | auth | Dương | Tài khoản không có `password_hash` thì ẩn mục đổi mật khẩu. Đổi mật khẩu: nhập mật khẩu cũ, mật khẩu mới theo `specs_auth.md` BR-05, có ô xác nhận | Đã chốt (20/11, build-first) |
+| OQ-28 | Tiêu chí gắn nhãn "Đang phổ biến" (OQ-10): bao nhiêu bệnh, từ bao nhiêu lượt *[phát sinh 20/11]* | C4 UC05 bước 2; FL LIB-03 | — | disease_library | Dương | Top N bệnh theo số lượt `DISEASE` có độ tin cậy ≥ ngưỡng trong 30 ngày (chỉ bệnh có ít nhất 1 lượt). N và số ngày để trong cấu hình; giá trị N chọn khi làm `disease_library` | Đã chốt (20/11, build-first) |
+
+## B. Kỹ thuật (TD) — TechLead quyết
+
+| Mã | Vấn đề | Căn cứ / phương án đã nêu | Ảnh hưởng | Quyết định | Trạng thái |
+|---|---|---|---|---|---|
+| TD-01 | Lưu ảnh ở đâu: ảnh gốc, ảnh đã chỉnh, ảnh minh hoạ bệnh, ảnh loại cây, ảnh đại diện cây và người dùng, ảnh ghi chú | Không tài liệu nào nói tới. Bảng chỉ lưu `*_url` | diagnosis, catalog, my_plants, auth | **AWS S3** (giao thức S3), đặt sau interface `StorageService`. Bucket riêng tư, ảnh đọc qua presigned URL ngắn hạn. Thêm SDK S3 (tên gói xác nhận khi làm). Khoá truy cập để trống trong `.env.example` | Đã chốt (20/11, build-first) |
+| TD-02 | Đóng gói app: PWA hay Capacitor | design/06, 08: Capacitor cần bản tĩnh (`output: "export"`), không dùng được Server Components có dữ liệu động và Server Actions; PWA không có ràng buộc này | Cách lấy dữ liệu ở frontend, thông báo | Hoãn chọn công cụ. Code tương thích cả PWA lẫn Capacitor: gọi API phía client qua `lib/api`, không dùng Server Actions, không dùng Server Components lấy dữ liệu động | Hoãn |
+| TD-03 | Redis dùng vào việc gì | ERD-doc 3.2: phiên đăng nhập, refresh token, OTP là dữ liệu ngắn hạn; "Redis đã có sẵn trong docker-compose" | auth | Lưu bản băm refresh token trong Redis, xoay vòng mỗi lần refresh, xoá khi đăng xuất (khớp FL AUTH-03 "thu hồi refresh token"). Thêm thư viện client Redis (tên gói hỏi khi làm `auth`) | Đã chốt (20/11, build-first) |
+| TD-04 | Mã AI service đặt trong `code/ai-service/` hay repo riêng; chạy chung với backend thế nào (docker-compose); nhóm AI làm việc với repo này ra sao | FL: AI service Python tách riêng, giao tiếp qua API | diagnosis, cấu trúc repo | Mock trong backend: `AI_MODE=mock|http`. Mock trả top-3 từ `model_labels` đã seed, ép được lỗi và timeout để test. Vị trí mã AI service và cách chạy chung (compose): hoãn, chờ nhóm AI | Đã chốt một phần (20/11, build-first) |
+| TD-05 | Chuẩn response và lỗi của API, tiền tố route, tài liệu API (vd OpenAPI) | — | Mọi feature | Tiền tố `/api/v1`. Thành công trả thẳng dữ liệu; danh sách `{items, page, pageSize, total}`. Lỗi `{statusCode, code, message, errors?}`: `code` là mã máy tiếng Anh, `message` là câu tiếng Việt đúng specs, `errors[]` gồm `{field, message}`. Swagger (`@nestjs/swagger`) chỉ bật ở dev tại `/api/docs`; `api_<feature>.md` vẫn là nguồn sự thật | Đã chốt (20/11, build-first) |
+| TD-06 | Cổng chạy: backend `PORT ?? 3000` trùng với `next dev` mặc định 3000 | technical_overview H5 | Tất cả | Frontend 3000, backend 4000 (`PORT` trong `.env.example`), AI service 8000 | Đã chốt (20/11, build-first) |
+| TD-07 | Môi trường demo/staging và cách triển khai (Docker hoá backend, frontend, AI service) | Đề cương: triển khai bằng Docker | Bước 10–11, bảo vệ | | Chưa chốt |
+| TD-08 | Dashboard (truy vấn chéo nhiều mô-đun) đặt ở mô-đun nào | ERD-doc mục 8 chỉ có 4 mô-đun | dashboard | Mô-đun thứ 5 `dashboard` (chỉ ADMIN, không có bảng riêng), được chạy truy vấn tổng hợp chỉ đọc qua `DataSource`. Đây là ngoại lệ có ghi rõ của quy tắc "không inject repository của mô-đun khác" | Đã chốt (20/11, build-first) |
+| TD-09 | Giữ hay bỏ `@nestjs/observe` (đang để khoá mẫu `YOUR_APP_KEY`) | technical_overview H3 | — | Bỏ `@nestjs/observe`. Gỡ khỏi `app.module.ts` và `package.json` ở việc nền, trước feature đầu tiên | Đã chốt (20/11, build-first) |
+| TD-10 | Công cụ test UI end-to-end | Repo chưa có công cụ nào | Bước 10 | Hoãn tới bước 10 | Hoãn |
+| TD-11 | Mô tả màn hình đặt ở `docs/<feature>/design_<feature>.md` (theo framework) hay `../design/screens/` (theo design/06) | — | Bước 6 | `../design/screens/` (theo design/06). Nằm ngoài git. Cần sửa `/gen-docs`, `CLAUDE.md`, `docs/README.md` mục 5 (sửa `.claude/` và `CLAUDE.md` chờ duyệt theo luật 9) | Đã chốt (20/11, build-first) |
+| TD-12 | Frontend giữ access token và refresh token ở đâu *[phát sinh 20/11]* | fe-coding-rules mục 4 (chờ TD-02, TD-05) | auth, mọi feature frontend | Access token ngắn hạn giữ trong bộ nhớ. Refresh token trong cookie httpOnly, SameSite=Lax, path `/api/v1/auth` (để cả refresh lẫn đăng xuất đọc được). Backend có thể cần `cookie-parser` (hỏi khi làm). Khi đóng gói Capacitor chỉ đổi nơi lưu trong `lib/api`. Khi triển khai, frontend và backend phải cùng site | Đã chốt (20/11, build-first) |
+| TD-13 | Google OAuth làm ngay hay để sau *[phát sinh 20/11]* | C4 UC01; FL AUTH-01, 02 (Must) | auth | Làm ngay trong `auth`. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` để trống trong `.env.example`, Dương tự tạo OAuth Client. Thư viện hỏi khi `/feature-dev auth` | Đã chốt (20/11, build-first) |
+
+## C. Lệch giữa các nguồn dữ liệu (DC) *[rà soát 20/11]*
+
+ERD-png 19/11 là bản vẽ mới nhất nhưng lệch với ERD-doc và SQL ở nhiều chỗ. Một số chỗ có vẻ là **bản vẽ chưa đầy đủ** (DC-05 → DC-08), một số khác có vẻ là **quyết định bỏ cột** (cột bị gạch trong ERD-doc mục 4 và không có trong ERD-png). Dương đã chốt DC-01 → DC-11 ngày 20/11 (build-first), xem cột "Quyết định". `data_model.md` đã áp các quyết định này.
+
+| Mã | Bảng.cột | ERD-doc mục 6.2 / SQL (08/11) | ERD-doc mục 4 (sửa 19/11) | ERD-png (19/11) | Ghi chú | Quyết định | Trạng thái |
+|---|---|---|---|---|---|---|---|
+| DC-01 | `users.allow_data_sharing` | Có, ghi "(chờ chốt)" | **Gạch** | Không có | Liên quan OQ-12 | Bỏ ở bản build này (cùng OQ-12) | Đã chốt (20/11, build-first) |
+| DC-02 | `crops.watering_interval_days`, `fertilizing_interval_days` | Có | **Gạch** | Không có | Nếu bỏ: nhắc WATERING, FERTILIZING do hệ thống gợi ý sẽ không còn nguồn chu kỳ (OQ-15) | Giữ hai cột theo ERD-doc 6.2. Dùng cho gợi ý nhắc tưới, bón (OQ-15) | Đã chốt (20/11, build-first) |
+| DC-03 | `diseases.summary` | Có, bắt buộc trước khi công khai | Có | **Không có** | UC05 cần "mô tả ngắn" trên thẻ tin | Giữ `summary` theo ERD-doc | Đã chốt (20/11, build-first) |
+| DC-04 | `diseases.source_refs` | Có | **Gạch** | Không có | UC05 bước 6 vẫn hiển thị "nguồn tham khảo", UC06 form vẫn có trường này, OQ-19 đề xuất ghi nguồn | Bỏ `source_refs` theo ERD-doc mục 4 và ERD-png. Bỏ trường nguồn tham khảo ở form bệnh và trang chi tiết bệnh | Đã chốt (20/11, build-first) |
+| DC-05 | `model_labels` | `id`, `class_code` (UNIQUE), `label_type`, `crop_id`, `disease_id`, `is_active`, `created_at`, `updated_at` | Như 6.2 | **Chỉ có** `Cropid`, `Diseaseid` | Thiếu các cột cốt lõi của bảng ánh xạ | Theo ERD-doc 6.2 (`data_model.md`). ERD-png là bản vẽ chưa đầy đủ | Đã chốt (20/11, build-first) |
+| DC-06 | `diagnosis_predictions` | PK `(diagnosis_id, label_id)`, `probability`, `rank_no` NOT NULL | Như 6.2 | **Không có `label_id`**; `probability`, `rank_no` cho phép NULL | Thiếu `label_id` thì không biết dự đoán là nhãn nào | Theo ERD-doc 6.2 (`data_model.md`). ERD-png là bản vẽ chưa đầy đủ | Đã chốt (20/11, build-first) |
+| DC-07 | Quan hệ `plants` – `plant_logs` | `plant_logs.plant_id` NOT NULL, CASCADE (hợp thành 1 – 0..*) | Như 6.2 | **`plants.PlantLogid`**, `plant_logs` không có `plant_id` | Ngược chiều quan hệ: một cây chỉ trỏ được tới một log | Theo ERD-doc 6.2: `plant_logs.plant_id` NOT NULL, CASCADE. ERD-png là bản vẽ chưa đầy đủ | Đã chốt (20/11, build-first) |
+| DC-08 | `plant_logs.status_after`, `image_url` | Có | Có | Không có | UC04 9b (cập nhật tình trạng) và 9c (ảnh kèm ghi chú) cần hai cột này | Theo ERD-doc 6.2: giữ `status_after`, `image_url` | Đã chốt (20/11, build-first) |
+| DC-09 | `plants.planted_date` | Có | Có | Không có | Form UC04 bước 4 có "ngày trồng" | Theo ERD-doc 6.2: giữ `planted_date` | Đã chốt (20/11, build-first) |
+| DC-10 | `plants.location_note` | `location_note` | `locationNote` | `note` | Khác tên | Đổi tên thành `plants.note` theo ERD-png. Kiểu giữ VARCHAR(255) NULL | Đã chốt (20/11, build-first) |
+| DC-11 | Độ dài và kiểu | `notifications.content` VARCHAR(500); `disease_images.caption` 255; `crops.image_url` 500; `diseases.severity` VARCHAR(10); TIMESTAMPTZ; BOOLEAN | — | 300; 100; 255; 20; `timestamp`; `int(11)` cho boolean; lỗi chính tả `update_at`, `prevenion`, `recheckDays` | Phần lớn do Visual Paradigm hiển thị kiểu dữ liệu kiểu MySQL | Theo ERD-doc 6.2 (kiểu PostgreSQL). ERD-png hiển thị kiểu MySQL, bỏ qua | Đã chốt (20/11, build-first) |
+| DC-12 | File máy đọc được | SQL, DBML, PlantUML, `_nguon_sinh_tu_dong/model.py` ngày 08/11 | — | — | Chưa phản ánh các mục gạch ngày 19/11. Sau khi chốt DC-01 → DC-11: sửa `model.py` rồi chạy lại script sinh | Sẽ cập nhật sau: sửa `model.py` rồi sinh lại SQL, DBML, PUML; cập nhật docx Class/CSDL, ERD-png, UC-png (bỏ «extend» Đánh giá) theo quyết định 20/11. Phiên 20/11 không sửa file nguồn ngoài repo | Hoãn |
+
+## D. Đã giải quyết theo tài liệu mới hơn (chỉ để tra cứu)
+
+| Điểm trong tài liệu cũ | Tài liệu cũ | Hiện tại theo | Hiện tại |
+|---|---|---|---|
+| Vai trò Khách; thư viện bệnh công khai, không cần đăng nhập | FL v0.2 (AUTH-01/02, LIB-01 → 03) | C4 4.2.2 | Không có chế độ khách, mọi chức năng cần đăng nhập |
+| Đăng ký bằng email **hoặc SĐT** | FL AUTH-01 | C4 UC01 | Chỉ email hoặc Google |
+| Người dùng dùng app mobile; thông báo đẩy FCM; bảng `DeviceToken` | FL | Quyết định 11/2026 (C4 4.1, design/README) | Web app responsive, đóng gói app sau; kênh thông báo xem OQ-09 |
+| Đánh số UC: UC06 Nhận nhắc chăm sóc, UC07 Dashboard, UC08 Danh mục | FL sheet "UC chính & NFR" | C4 Bảng 4.1 | UC06 Danh mục, UC07 Dashboard; thông báo chưa có UC (OQ-16) |
+| "Khoẻ mạnh" là một bản ghi trong bảng bệnh (`is_healthy`) | C4 Bảng 4.15; FL "Gợi ý thực thể" | ERD-doc L2 | Bảng `model_labels`, nhãn `HEALTHY` |
+| Mẫu nhắc chăm sóc theo bệnh (`CareReminderTemplate`) | FL ADM-02, NOTI-01 | ERD-doc 4.3, 4.8 | `diseases.recheck_days` + `reminders.source` (vẫn chờ OQ-15) |
+| `diagnoses.disease_id`, `confidence`, `is_deleted`; `plants.last_diagnosed_at`; `notifications.link_url`; `reminders.created_by` | C4 4.5 | ERD-doc D1, D2, D8, D9, D10 | Bỏ cột dẫn xuất; xoá mềm chỉ bằng `deleted_at`; đổi tên thành `source` |
+| Backend FastAPI hoặc Spring Boot; Web ReactJS; Mobile Flutter/React Native | Đề cương mục 7 | Repo `code/` | NestJS 12 + Next.js 16 |
+| "frontend repo git riêng" | design/08 | Repo `code/` (commit e1800bf) | Monorepo; `design/` nằm ngoài git |
+
+## E. Đã chốt (không hỏi lại)
+
+| Quyết định | Nguồn |
+|---|---|
+| Web app responsive cho máy tính và điện thoại; đóng gói thành app sau, không code mobile thuần | C4 4.1; design/README |
+| Bắt buộc đăng nhập, không có chế độ khách | C4 4.2.2 |
+| Hai vai trò USER và ADMIN; ADMIN được seed sẵn | C4 4.2.2 |
+| Đăng nhập bằng email + mật khẩu hoặc Google | C4 UC01 |
+| 5 loại cây: lúa, ngô, cà chua, ớt, khoai tây | C4 4.1 |
+| "Cây trồng của tôi" là một cây hoặc một khu trồng cùng loại, không có thực thể thửa ruộng | C4 UC04 |
+| Backend một khối chia mô-đun + AI service riêng; PostgreSQL | ERD-doc 10.3 (trả lời C4 #16, #17) |
+| Mô hình dữ liệu 11 lớp, 15 quan hệ; tách `ModelLabel` | ERD-doc |
+| Top-k = 3 dự đoán cho mỗi lượt | ERD-doc 4.11, 7.4 |
+| Phong cách giao diện theo bộ homai; light mode cho v1. Font Be Vietnam Pro là luật hiện hành nhưng vẫn chờ nhóm xác nhận khi xem preview | design/README |
