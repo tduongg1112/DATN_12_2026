@@ -24,7 +24,7 @@ Bạn là người kiểm tra độc lập. Bạn **không** tham gia viết cá
 
 - `CLAUDE.md`, `project_overview.md` mục 9 (nguồn và thứ tự ưu tiên).
 - `docs/_shared/open_questions.md`, `docs/_shared/data_model.md`.
-- Toàn bộ `docs/$0/`.
+- Toàn bộ `docs/$0/`, và `../design/screens/$0.md` nếu có (mô tả màn hình, TD-11).
 
 ## Chế độ `specs` (bước 5)
 
@@ -47,11 +47,11 @@ Thêm câu hỏi riêng cho feature có liên quan tới AI (`diagnosis`, `catal
 
 ## Chế độ `docs` (bước 7)
 
-So sánh `api_`, `database_design_`, `design_`, `test_case_`, `test_plan_` với `specs_$0.md`, `data_model.md`, `technical_overview.md`.
+So sánh `api_`, `database_design_`, `test_case_`, `test_plan_` và `../design/screens/$0.md` với `specs_$0.md`, `data_model.md`, `technical_overview.md`.
 - **Mỗi endpoint** truy vết được về US hoặc BR. Request và response đủ trường. Có phân quyền. Mã lỗi khớp phần ngoại lệ.
 - **Database design**: chỉ dùng bảng và cột có trong `data_model.md`. Không dùng cột đang ⚠ khi chưa có quyết định.
 - **Test case**: mỗi BR có ít nhất 1 TC. Mỗi luồng thay thế và mỗi ngoại lệ có TC. Có TC về phân quyền và TC biên. Tuân thủ `.claude/rules/tester/testing-rules.md`.
-- **Design**: mỗi màn hình có khuôn trang và đủ trạng thái theo `../design/06` và `07`.
+- **Màn hình** (`../design/screens/$0.md`): mỗi màn hình có khuôn trang và đủ trạng thái theo `../design/06` và `07`, truy vết được về US hoặc BR.
 
 ## Chế độ `impl` (bước 11)
 

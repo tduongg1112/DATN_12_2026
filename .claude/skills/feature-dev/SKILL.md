@@ -15,7 +15,7 @@ Feature: `$ARGUMENTS`.
 - Thiếu một trong các điều kiện trên thì **dừng lại và báo**, không code.
 
 ## 2. Đọc
-- Toàn bộ `docs/$ARGUMENTS/` và `docs/_shared/data_model.md`.
+- Toàn bộ `docs/$ARGUMENTS/`, `docs/_shared/data_model.md`, và `../design/screens/$ARGUMENTS.md` nếu feature có giao diện (TD-11).
 - Rule: `.claude/rules/backend/*`, `.claude/rules/frontend/*`, `frontend/AGENTS.md`.
 - Nếu có giao diện: `../design/README.md` và `../design/08-nextjs-shadcn.md`.
 - Code hiện có ở các mô-đun liên quan. Nếu là CR: đọc thêm `test_report_` cũ.

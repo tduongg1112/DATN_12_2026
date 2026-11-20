@@ -1,21 +1,33 @@
 import { Module } from '@nestjs/common';
-import { createObserveModule } from '@nestjs/observe';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
-
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
+import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CommonModule } from './common/common.module.js';
+import { StorageModule } from './common/storage/storage.module.js';
+import { validateEnv } from './config/env.validation.js';
+import { DatabaseModule } from './database/database.module.js';
+import { HealthController } from './health/health.controller.js';
+import { AccountsModule } from './modules/accounts/accounts.module.js';
+import { CatalogModule } from './modules/catalog/catalog.module.js';
+import { DiagnosisModule } from './modules/diagnosis/diagnosis.module.js';
+import { PlantsModule } from './modules/plants/plants.module.js';
 
 @Module({
   imports: [
-    // Distributed tracing, auto-correlated logs, request/job metrics, error
-    // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
-    ObserveModule.forRoot({
-      appKey: 'YOUR_APP_KEY',
-      appSecret: 'YOUR_APP_SECRET',
-      serviceId: 'backend',
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      validate: validateEnv,
     }),
+    // Job nhắc việc đăng ký ở feature my_plants (be-coding-rules.md mục 8).
+    ScheduleModule.forRoot(),
+    DatabaseModule,
+    CommonModule,
+    StorageModule,
+    AccountsModule,
+    CatalogModule,
+    DiagnosisModule,
+    PlantsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [HealthController],
 })
 export class AppModule {}

@@ -1,6 +1,7 @@
 # Design — <feature>
 
-> **Trạng thái:** DRAFT · Theo design system `../design/` (xem `design_overview.md`). Nơi đặt file theo TD-11.
+> **Trạng thái:** DRAFT · Theo design system `../design/` (xem `design_overview.md`).
+> **Nơi đặt (TD-11):** `../design/screens/<feature>.md`, ngoài git. Mẫu này nằm trong repo để `/gen-docs` dùng.
 
 ## Danh sách màn hình
 | # | Màn hình | Khuôn trang (design/06) | Vai trò | Phục vụ (US) |

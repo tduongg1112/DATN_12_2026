@@ -16,7 +16,7 @@ services:
       test:
         [
           'CMD-SHELL',
-          'pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-task_management}',
+          'pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-da_2026}',
         ]
       interval: 10s
       timeout: 5s

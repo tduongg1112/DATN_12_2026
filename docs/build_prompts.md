@@ -132,7 +132,7 @@ Bước 1 — Nạp ngữ cảnh: làm theo .claude/skills/load-context/SKILL.md
 
 Bước 2 — Tài liệu kỹ thuật bản gọn (thay /gen-docs ở chế độ build-first):
 - Sinh docs/<FEATURE>/api_<FEATURE>.md và database_design_<FEATURE>.md theo docs/_templates/ và quy tắc trong .claude/skills/gen-docs/SKILL.md.
-- Nếu feature có giao diện: thêm design_<FEATURE>.md (danh sách màn, khuôn trang, thành phần, trạng thái).
+- Nếu feature có giao diện: thêm ../design/screens/<FEATURE>.md (TD-11; danh sách màn, khuôn trang, thành phần, trạng thái).
 - Mỗi endpoint và màn hình ghi rõ phục vụ US/BR nào.
 - Chưa sinh test_case/test_plan (để giai đoạn test).
 - Đặt trạng thái "REVIEWED (build-first)". Cho tôi xem bảng tổng quan endpoint và màn hình, chờ tôi OK.

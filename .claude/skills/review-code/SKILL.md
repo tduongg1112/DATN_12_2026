@@ -11,7 +11,7 @@ Feature: `$ARGUMENTS`. Tên lệnh khác `/review` và `/code-review` có sẵn 
 
 ## 1. Phạm vi review
 - Lấy thay đổi bằng `git diff main...HEAD` trên nhánh `feat/$ARGUMENTS`. Nếu chưa commit thì dùng `git diff` và `git diff --staged`.
-- Đọc `docs/$ARGUMENTS/` (specs, api, database_design, design), `docs/_shared/data_model.md`, toàn bộ `.claude/rules/`.
+- Đọc `docs/$ARGUMENTS/` (specs, api, database_design), `../design/screens/$ARGUMENTS.md` (màn hình, TD-11), `docs/_shared/data_model.md`, toàn bộ `.claude/rules/`.
 
 ## 2. Checklist
 

@@ -7,7 +7,7 @@
 - **Hệ thống hỗ trợ quản lý sức khoẻ cây trồng**, đồ án tốt nghiệp PTIT 2026, nhóm 3 người.
 - Web app responsive chạy trên máy tính và điện thoại. Sau này đóng gói thành app, không code mobile thuần.
 - Lõi: chẩn đoán bệnh trên lá cây từ ảnh. Backend gọi AI service (mô hình lai CNN–Mamba do nhóm AI xây). 5 loại cây: lúa, ngô, cà chua, ớt, khoai tây.
-- 2 vai trò USER và ADMIN. Bắt buộc đăng nhập (email hoặc Google), không có chế độ khách.
+- 2 vai trò USER và ADMIN; ADMIN dùng được mọi chức năng của USER (OQ-22). Bắt buộc đăng nhập (email hoặc Google), không có chế độ khách.
 - Nghiệp vụ chi tiết: `project_overview.md`. Kỹ thuật: `technical_overview.md`. Giao diện: `design_overview.md`.
 
 ## 2. Bản đồ repo (`code/` là gốc git)
@@ -17,7 +17,7 @@ code/
 ├── CLAUDE.md                 ← file này (= INSTRUCTION.md)
 ├── project_overview.md       ← Business context: mục tiêu, vai trò, UC, quy tắc chung, nguồn tài liệu
 ├── technical_overview.md     ← Technical context: kiến trúc, stack, hợp đồng AI service, quyết định kỹ thuật
-├── design_overview.md        ← Design context: trỏ tới design system ở ../design/
+├── design_overview.md        ← Design context: trỏ tới design system ở ../design/ (mô tả màn hình: ../design/screens/, TD-11)
 ├── .claude/
 │   ├── rules/                ← Quy tắc bắt buộc, tự nạp theo đường dẫn file đang làm (frontmatter `paths`)
 │   │   ├── backend/          be-coding-rules.md, database-rules.md
@@ -28,7 +28,7 @@ code/
 │   ├── README.md             ← Quy trình, vai trò, bảng trạng thái từng feature
 │   ├── _shared/              open_questions.md (điểm chưa chốt), data_model.md (CSDL dùng chung)
 │   ├── _templates/           Mẫu các loại tài liệu feature
-│   └── <feature>/            specs_, api_, database_design_, design_, test_case_, test_plan_, test_report_ + evidence/
+│   └── <feature>/            specs_, api_, database_design_, test_case_, test_plan_, test_report_ + evidence/
 ├── backend/                  NestJS 12 + TypeORM + PostgreSQL
 └── frontend/                 Next.js 16 + Tailwind v4 + shadcn/ui (có AGENTS.md riêng, phải đọc)
 ```
@@ -42,7 +42,7 @@ Nguồn gốc (SRS) nằm **ngoài repo**, ở thư mục cha `../`: Chương 4,
 | Đầu phiên | Chạy `/load-context [feature]` |
 | Làm một feature | Toàn bộ `docs/<feature>/`, rồi `docs/_shared/data_model.md` nếu đụng CSDL |
 | Viết code backend | `.claude/rules/backend/*` (tự nạp khi đọc file trong `backend/`) |
-| Viết code frontend / UI | `frontend/AGENTS.md`, `.claude/rules/frontend/*`, `../design/README.md` |
+| Viết code frontend / UI | `frontend/AGENTS.md`, `.claude/rules/frontend/*`, `../design/README.md`, `../design/screens/<feature>.md` |
 | Gặp chỗ chưa rõ | `docs/_shared/open_questions.md` |
 
 ## 4. Luật cứng, áp dụng mọi phiên
@@ -60,14 +60,14 @@ Nguồn gốc (SRS) nằm **ngoài repo**, ở thư mục cha `../`: Chương 4,
 
 ## 5. Quy trình và lệnh
 
-Quy trình đầy đủ, vai trò và RACI: `docs/README.md`. Tóm tắt các bước cho mỗi feature:
+Quy trình đầy đủ, vai trò và RACI: `docs/README.md`. **Đang ở chế độ build-first (từ 20/11):** specs ở trạng thái `VERIFIED (build-first)` chưa qua `/cross-check`, mọi quyết định sẽ review lại ở giai đoạn test (`docs/README.md` mục 4). Tóm tắt các bước cho mỗi feature:
 
 | Bước (framework) | Lệnh | Kết quả |
 |---|---|---|
 | 0. Nạp ngữ cảnh (`/init`) | `/load-context [feature]` | Báo trạng thái, câu hỏi mở, bước tiếp theo |
 | 3–4. Đọc SRS, chuẩn bị specs | `/read-docs <feature>` | `specs_<feature>.md` (DRAFT) |
 | 5. Verify specs | `/cross-check <feature> specs` | Báo cáo kiểm tra độc lập. Dương duyệt thì chuyển sang `VERIFIED` |
-| 6. AI sinh tài liệu kỹ thuật | `/gen-docs <feature>` | api_, database_design_, design_, test_case_, test_plan_ |
+| 6. AI sinh tài liệu kỹ thuật | `/gen-docs <feature>` | api_, database_design_, test_case_, test_plan_; màn hình ở `../design/screens/<feature>.md` |
 | 7. Review tài liệu | `/cross-check <feature> docs` | Dương duyệt thì chuyển sang `REVIEWED` |
 | 8. Phát triển BE + FE | `/feature-dev <feature>` | Lên kế hoạch, Dương OK, rồi mới code, build và test |
 | 9. Review code, cập nhật rules | `/review-code <feature>` | Danh sách lỗi và đề xuất sửa rules |

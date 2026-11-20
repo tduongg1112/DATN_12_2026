@@ -14,7 +14,8 @@ paths:
 ## 1. Nguồn sự thật
 
 - Thiết kế bảng dùng chung là `docs/_shared/data_model.md`, gồm 11 bảng.
-- Cột hoặc bảng nào đang được đánh dấu ⚠ (lệch giữa ERD 19/11 và tài liệu Class/CSDL, mã `DC-xx`) thì **không được code** khi chưa có quyết định ghi trong `docs/_shared/open_questions.md`.
+- DC-01 → DC-11 đã chốt ngày 20/11 (build-first) và `data_model.md` đã áp: bỏ `users.allow_data_sharing`, bỏ `diseases.source_refs`, đổi `plants.location_note` thành `note`, giữ `crops.watering_interval_days`, `fertilizing_interval_days`, `diseases.summary`. **`data_model.md` thắng mọi nguồn khác** (SQL 04, DBML, docx, ảnh ERD) cho tới khi DC-12 được làm.
+- Nếu sau này có cột hoặc bảng bị đánh dấu ⚠ (mã `DC-xx` chưa có quyết định trong `docs/_shared/open_questions.md`) thì **không được code** phần đó.
 - **Không thêm bảng hay cột** ngoài `data_model.md`. Cần thì ghi một câu hỏi mới vào `open_questions.md` và hỏi Dương.
 - `database_design_<feature>.md` chỉ mô tả bảng và truy vấn **mà feature đó dùng**, có tham chiếu về `data_model.md`. Không định nghĩa lại cột.
 
@@ -23,6 +24,7 @@ paths:
 - Bảng: chữ thường, snake_case, số nhiều (`users`, `plant_logs`, `diagnosis_predictions`).
 - Cột: snake_case. Entity TypeScript: lớp PascalCase số ít (`User`, `PlantLog`), thuộc tính camelCase, ánh xạ tên cột rõ ràng bằng `name: 'snake_case'` trong decorator **(đề xuất)**.
 - Chỉ mục: `ix_<bảng>_<cột>`. Chỉ mục duy nhất: `ux_…` (theo Bảng 6.14).
+- Constraint đặt tên tường minh, giống hệt nhau ở migration và entity: `pk_<bảng>`, `fk_<bảng>_<quan hệ>`, `uq_<bảng>_<cột>`, `ck_<bảng>_<ý nghĩa>`. Entity dùng `primaryKeyConstraintName`, `foreignKeyConstraintName`, `@Unique(name, …)`, `@Check(name, …)`, `@Index(name, …)`. Nhờ vậy `npm run schema:log` so khớp được.
 
 ## 3. Kiểu dữ liệu [ERD 2.4]
 
@@ -35,7 +37,13 @@ paths:
 | Xác suất | `DECIMAL(5,4)` | Từ 0 đến 1 |
 | Số ngày, thứ tự | `SMALLINT` | |
 
-Lưu ý khi dùng `pg` và TypeORM: cột `BIGINT` và `DECIMAL` mặc định được trả về JavaScript dưới dạng **chuỗi**. Chọn cách xử lý (transformer hoặc kiểu `string` trong entity) một lần, áp dụng thống nhất cho mọi entity, rồi ghi lại vào file này. Trước khi chọn, kiểm tra tài liệu của phiên bản TypeORM đang cài.
+**Kiểu JavaScript của BIGINT, DECIMAL, DATE (Dương chốt 21/11: dùng `number`):**
+- `BIGINT` → `number`. Data source bật `parseInt8: true` (`src/database/typeorm-options.ts`), nên mọi giá trị int8 kể cả id sinh khi INSERT và kết quả `COUNT(*)` đều là `number`. Không cần transformer. An toàn vì id của hệ thống không vượt `Number.MAX_SAFE_INTEGER`.
+- `DECIMAL`/`NUMERIC` → `number` qua `decimalTransformer` (`src/database/transformers.ts`). **Cột DECIMAL nào cũng phải gắn transformer này.** Truy vấn thô trả về numeric (vd `AVG(...)`) vẫn là chuỗi: ép bằng `::float8` trong SQL hoặc `Number()` trong code.
+- `DATE` (`planted_date`, `action_date`) → `string` dạng `'YYYY-MM-DD'`, không đổi sang `Date` để tránh lệch múi giờ.
+- `TIMESTAMPTZ` → `Date`.
+
+Kiểm tra entity khớp CSDL: sau khi chạy migration, `npm run schema:log` phải báo "Your schema is up to date". Lưu ý PostgreSQL 18 lưu `DEFAULT CURRENT_DATE` nguyên văn, còn TypeORM 1.1 so với `('now'::text)::date`, nên migration ghi dạng sau (hai cách tương đương).
 
 ## 4. Cột chuẩn
 
@@ -55,7 +63,9 @@ Lưu ý khi dùng `pg` và TypeORM: cột `BIGINT` và `DECIMAL` mặc định �
 ## 6. Migration và seed [ERD 7.1]
 
 - TypeORM `synchronize: false` ở mọi môi trường.
-- Migration đầu tiên dựng từ phần 1 của `../Phân tích Class và ERD/04_Khoi_tao_CSDL_PostgreSQL.sql`, **sau khi** file này đã được cập nhật theo các quyết định DC-xx. File SQL hiện tại (08/11) chưa phản ánh các sửa đổi ngày 19/11.
+- Migration đầu tiên dựng **theo `data_model.md`**. File `../Phân tích Class và ERD/04_Khoi_tao_CSDL_PostgreSQL.sql` (08/11) chỉ dùng để tham khảo cú pháp CHECK, chỉ mục; nó chưa cập nhật theo quyết định 20/11 (DC-12 hoãn), nên khác `data_model.md` ở 3 cột nêu tại mục 1.
 - Thứ tự tạo bảng: users → crops → diseases → disease_images → model_labels → plants → plant_logs → reminders → notifications → diagnoses → diagnosis_predictions.
-- Seed (`npm run seed`, script chưa có): 1 ADMIN lấy từ `ADMIN_EMAIL`/`ADMIN_PASSWORD`, 5 loại cây `RICE, CORN, TOMATO, CHILI, POTATO`. Bệnh và nhãn mẫu trong file 04 chỉ là ví dụ (mã nhãn lúa là giả định), phải thay bằng danh sách thật của nhóm AI [ERD 7.2].
+- Lệnh: `npm run migration:run`, `npm run migration:revert`, `npm run schema:log` (build rồi chạy CLI TypeORM trên `dist/database/data-source.js`, biến môi trường nạp bằng `node --env-file-if-exists=.env`). Migration liệt kê tường minh trong `src/database/migrations/index.ts`, entity trong `src/database/entities.ts`.
+- Seed `npm run seed`: 1 ADMIN lấy từ `ADMIN_EMAIL`/`ADMIN_PASSWORD`, 5 loại cây `RICE, CORN, TOMATO, CHILI, POTATO`. Bệnh và nhãn mẫu trong file 04 chỉ là ví dụ (mã nhãn lúa là giả định), phải thay bằng danh sách thật của nhóm AI [ERD 7.2]. Dữ liệu mẫu này chỉ nạp bằng `npm run seed:dev`. Seed chạy lại nhiều lần không tạo trùng; ADMIN đã có thì giữ nguyên.
+- Cột ảnh `*_url` lưu khoá đối tượng S3 hay URL đầy đủ: **chưa chốt (TD-14)**. Hỏi Dương trước khi viết entity đầu tiên có cột ảnh.
 - Mỗi migration có cả `up` và `down`. Không sửa migration đã chạy, muốn thay đổi thì tạo migration mới **(đề xuất)**.

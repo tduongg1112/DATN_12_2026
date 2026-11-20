@@ -14,7 +14,7 @@
 | `docs/<feature>/` + `evidence/` | Giữ nguyên, thêm `docs/_shared/` và `docs/_templates/` | CSDL được thiết kế chung cho cả hệ thống, và câu hỏi mở cũng dùng chung |
 | 5 vai trò BA, UI/UX, TechLead/SA, Dev, Tester | Dương + nhóm AI + Claude | Mục 2 |
 | B5 verify 3 bên, B11 Tester xác nhận độc lập | `/cross-check` (subagent ngữ cảnh riêng) + nhóm AI (với feature dính AI) + Dương duyệt | Phía phần mềm không có người thứ hai để kiểm tra chéo |
-| Bước 1–2: brainstorming nghiệp vụ, thiết kế giao diện trước SRS | **Đã làm phần lớn**: Chương 4, Function List, Class/ERD, design system | Màn hình cụ thể làm ở bước 6 (`design_<feature>.md`) |
+| Bước 1–2: brainstorming nghiệp vụ, thiết kế giao diện trước SRS | **Đã làm phần lớn**: Chương 4, Function List, Class/ERD, design system | Màn hình cụ thể làm ở bước 6, lưu ở `../design/screens/<feature>.md` (TD-11) |
 
 ## 2. Vai trò và RACI
 
@@ -49,7 +49,7 @@ R = trực tiếp làm · A = chịu trách nhiệm/duyệt · C = được hỏ
       │
 /read-docs <f> ──► specs (DRAFT) ──► /cross-check <f> specs ──► Dương duyệt ──► specs VERIFIED   ◄── CỔNG 1
       │                                     (nhóm AI duyệt nếu có dính AI)
-/gen-docs <f>  ──► api, database_design, design, test_case, test_plan (DRAFT)
+/gen-docs <f>  ──► api, database_design, test_case, test_plan (DRAFT) + ../design/screens/<f>.md
       │
 /cross-check <f> docs ──► Dương sửa và duyệt ──► docs REVIEWED                                   ◄── CỔNG 2
       │
@@ -81,7 +81,7 @@ Thứ tự gợi ý **(đề xuất, Dương quyết)**, dựa trên phụ thu�
 
 | # | Feature | UC | Mã chức năng (M/S/C) | Phụ thuộc | Còn chặn | specs | docs | code | test |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | — (cần `GOOGLE_CLIENT_ID` khi chạy thử Google) | VERIFIED (build-first) | — | — | — |
+| 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | TD-14 (cột `avatar_url`); cần `GOOGLE_CLIENT_ID` khi chạy thử Google | VERIFIED (build-first) | — | — | — |
 | 2 | [`catalog`](catalog/specs_catalog.md) | UC06 | ADM-01, 02, 07 (2/0/1) | auth | — | VERIFIED (build-first) | — | — | — |
 | 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | Giá trị ngưỡng OQ-06 (chờ nhóm AI) | VERIFIED (build-first) | — | — | — |
 | 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | — | — | — |
@@ -96,9 +96,10 @@ Thứ tự gợi ý **(đề xuất, Dương quyết)**, dựa trên phụ thu�
 | N1 | Chốt DC-01 → DC-12, sửa `_nguon_sinh_tu_dong/model.py` rồi chạy lại để có SQL, DBML, PUML khớp nhau; cập nhật `data_model.md` | `open_questions.md` mục C | DC-01 → DC-11 đã chốt, `data_model.md` đã cập nhật. Sửa nguồn ngoài repo: hoãn (DC-12) |
 | N2 | Chốt TD-02, TD-05, TD-06 (đóng gói, chuẩn API, cổng chạy) | `technical_overview.md` mục 10 | Xong (TD-02 hoãn, kèm ràng buộc code tương thích) |
 | N3 | Cài design system vào `frontend/` (6 bước) | `../design/08-nextjs-shadcn.md` | Chưa làm |
-| N4 | Migration đầu tiên, script seed, `backend/.env.example` | `.claude/rules/backend/database-rules.md` mục 6 | Chưa làm |
+| N4 | Migration đầu tiên, script seed, `backend/.env.example` | `.claude/rules/backend/database-rules.md` mục 6 | Xong 21/11 (dựng nền backend) |
 | N5 | Chốt hợp đồng AI service với nhóm AI (OQ-05, OQ-06, TD-04) | `technical_overview.md` mục 5 | Một phần: OQ-05 chốt tạm, OQ-06 chờ giá trị ngưỡng, TD-04 dùng mock |
-| N6 | Gỡ `@nestjs/observe` (TD-09), đặt cổng backend 4000 (TD-06) | `open_questions.md` mục B | Chưa làm |
+| N6 | Gỡ `@nestjs/observe` (TD-09), đặt cổng backend 4000 (TD-06) | `open_questions.md` mục B | Xong 21/11 |
+| N7 | Nền backend: config, CSDL, entity, seed, guard, filter, StorageService, AiClient | Phiên 21/11 | Xong 21/11. Chưa có controller nghiệp vụ |
 
 ## 5. Cấu trúc một thư mục feature
 
@@ -107,12 +108,13 @@ docs/<feature>/
 ├── specs_<feature>.md            Bước 4: yêu cầu tách từ SRS (mẫu: _templates/specs_template.md)
 ├── api_<feature>.md              Bước 6
 ├── database_design_<feature>.md  Bước 6: chỉ cách feature dùng bảng chung
-├── design_<feature>.md           Bước 6: màn hình. TD-11 (chốt 20/11): chuyển sang ../design/screens/, /gen-docs chưa sửa theo (chờ duyệt)
 ├── template_<feature>.md         Bước 6: chỉ khi có thông báo, email hoặc file xuất
 ├── test_case_<feature>.md        Bước 6
 ├── test_plan_<feature>.md        Bước 6
 ├── test_report_<feature>.md      Bước 10
 └── evidence/                     Bước 10: <TC_ID>_<ten>.png | .mp4, api_logs_<YYYYMMDD>.txt
+
+../design/screens/<feature>.md   Bước 6: mô tả màn hình (TD-11, chốt 20/11). Nằm ngoài git, mẫu ở docs/_templates/design_template.md
 ```
 
 ## 6. Change request và bảo trì

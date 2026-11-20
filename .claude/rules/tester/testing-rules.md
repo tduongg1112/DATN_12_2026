@@ -23,7 +23,7 @@ paths:
   - Mỗi **ngoại lệ** (Exception) có ít nhất 1 test case. Kết quả mong đợi chép đúng câu thông báo trong specs.
   - Biên (boundary): ảnh 10 MB, mật khẩu 8 ký tự, lần sai mật khẩu thứ 5, thời gian chờ AI 15 giây, ngưỡng độ tin cậy.
   - Negative: dữ liệu sai định dạng, thiếu trường bắt buộc.
-  - **Phân quyền**: chưa đăng nhập; `USER` gọi route của `ADMIN`; truy cập dữ liệu của người dùng khác.
+  - **Phân quyền**: chưa đăng nhập; `USER` gọi route của `ADMIN` (bị chặn); `ADMIN` gọi route của người dùng (được phép, OQ-22); truy cập dữ liệu của người dùng khác, kể cả khi là `ADMIN`.
 - Kết quả mong đợi phải kiểm chứng được (status code, trường dữ liệu, câu hiển thị, bản ghi trong CSDL). Không viết kiểu "hệ thống hoạt động đúng".
 - Không viết test case cho nghiệp vụ không có trong specs.
 
@@ -37,8 +37,12 @@ Gồm: phạm vi (trong và ngoài), loại test, môi trường (URL, nhánh, C
   - Backend unit: `npm test`, viết bằng vitest trong file `*.spec.ts`.
   - Backend API: `npm run test:e2e`, vitest + supertest trong `backend/test/*.e2e-spec.ts`.
   - Frontend: `npm run lint && npm run typecheck && npm run build`.
-- AI service: test backend dùng **mock** lớp client AI. Test nghiệm thu luồng chẩn đoán dùng mô hình thật cùng nhóm AI.
-- Test UI: công cụ E2E chưa chốt (TD-10). Hiện test UI bằng tay và chụp màn hình ở 390px và 1440px.
+- AI service: test backend dùng **mock** client AI (`AI_MODE=mock`, TD-04), kể cả các ca lỗi và timeout. Test nghiệm thu luồng chẩn đoán dùng mô hình thật cùng nhóm AI.
+- Ngưỡng độ tin cậy: giá trị thật chưa có (OQ-06). Test biên đặt giá trị ngưỡng riêng trong cấu hình test, rồi kiểm tra ở ngay dưới, bằng và ngay trên giá trị đó.
+- Lưu ảnh: test mock `StorageService` (TD-01), không gọi S3 thật. Redis (TD-03) dùng instance trong `docker compose` hoặc mock.
+- Kết quả mong đợi của lỗi API kiểm tra theo dạng TD-05: `statusCode`, `code`, `message` (đúng câu specs), và `errors[].field` nếu là lỗi theo trường.
+- Test UI: chọn công cụ E2E ở bước 10 (TD-10 hoãn). Tới lúc đó test UI bằng tay và chụp màn hình ở 390px và 1440px.
+- Môi trường local: frontend `http://localhost:3000`, backend `http://localhost:4000/api/v1` (TD-06).
 - **Không bao giờ sửa kết quả mong đợi để test pass.** Test fail thì sửa code. Nếu bản thân test case sai thì báo Dương, sửa specs hoặc test case trước, rồi chạy lại.
 - Lặp lại cho tới khi đạt 100% pass. Test case không chạy được thì ghi `BLOCKED` kèm lý do.
 

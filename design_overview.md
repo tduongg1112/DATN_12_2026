@@ -20,7 +20,7 @@
 
 ## 2. Khuôn trang theo feature
 
-Lấy từ `../design/06-layout-responsive.md`. Màn hình cụ thể sẽ mô tả ở bước 6 (`design_<feature>.md`, xem TD-11).
+Lấy từ `../design/06-layout-responsive.md`. Màn hình cụ thể mô tả ở bước 6, lưu tại `../design/screens/<feature>.md` (TD-11, chốt 20/11; nằm ngoài git). ADMIN kế thừa chức năng USER (OQ-22) nên dùng cả các khuôn của người dùng, giao diện cần đường chuyển giữa khu quản trị và khu người dùng.
 
 | Khuôn | Nền | Feature dùng |
 |---|---|---|
@@ -40,8 +40,8 @@ Lấy từ `../design/06-layout-responsive.md`. Màn hình cụ thể sẽ mô t
 | Light mode cho v1 | Đã chốt |
 | Tên sản phẩm, logo | Chưa có. Không dùng lại tên và logo của bộ tham chiếu |
 | Cài design system vào `frontend/` | **Chưa làm** (technical_overview H1) |
-| Cách đóng gói app | Chưa chốt (TD-02) |
-| Danh sách màn hình | Chưa định nghĩa, làm ở bước 6 theo từng feature |
+| Cách đóng gói app | Hoãn chọn công cụ (TD-02). Code phải tương thích cả PWA lẫn Capacitor, xem `fe-coding-rules.md` mục 3 |
+| Danh sách màn hình | Chưa định nghĩa, làm ở bước 6 theo từng feature, lưu ở `../design/screens/` |
 
 ## 4. Quy tắc cho AI
 
