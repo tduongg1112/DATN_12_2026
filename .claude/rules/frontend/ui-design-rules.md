@@ -27,6 +27,8 @@ paths:
 - `rounded-*` của dự án **khác mặc định Tailwind**: `rounded-sm` là 12px.
 - Trạng thái sức khoẻ cây phải có cả màu lẫn chữ (`../design/01-color.md`, mục "Trạng thái sức khoẻ cây"). Nhãn trạng thái dùng đúng tên trong Bảng 4.8 của Chương 4.
 - ADMIN dùng được mọi màn của USER (OQ-22): khu quản trị (khuôn "Quản trị") và khu người dùng phải có đường chuyển qua lại rõ ràng.
+- Màu nhãn tình trạng (Dương chốt 21/11, theo cột "Dùng khi" của design/01): Chưa chẩn đoán → `info`; Khoẻ mạnh, Đã khỏi → `healthy`; Đang có bệnh → `severe`; Đang điều trị → `watch`. Dùng `<HealthStatus>` trong `components/ds/health-status.tsx`, không tự gán lại.
+- Kiểm tra bố cục ở 360/390/1440 bằng trang `/dev/design-check` và `/dev/shells/*` khi chạy dev.
 
 ## 3. Checklist trước khi bàn giao màn hình
 

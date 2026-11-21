@@ -1,0 +1,19 @@
+import type { Metadata } from "next"
+import { Construction } from "lucide-react"
+
+import { Card } from "@/components/ds/card-stack"
+import { EmptyState } from "@/components/ds/states"
+import { UserPageShell } from "@/components/layout/page-shells"
+
+export const metadata: Metadata = { title: "Thư viện bệnh" }
+
+/** Trang tạm, khuôn "Danh sách". Nghiệp vụ làm ở feature disease_library. */
+export default function Page() {
+  return (
+    <UserPageShell layout="list" title="Bệnh cây hay gặp">
+      <Card notch>
+        <EmptyState icon={Construction} message="Trang đang được xây dựng." />
+      </Card>
+    </UserPageShell>
+  )
+}

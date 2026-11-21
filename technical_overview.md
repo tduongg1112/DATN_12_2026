@@ -150,7 +150,7 @@ Phía backend, mọi lời gọi AI service đi qua một interface client duy n
 
 Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. Vì vậy các skill `/feature-dev`, `/gen-docs`, `/run-tests` luôn yêu cầu đọc rule tương ứng ngay từ đầu.
 
-## 9. Hiện trạng repo (cập nhật 21/11/2026, sau phiên dựng nền backend)
+## 9. Hiện trạng repo (cập nhật 21/11/2026, sau phiên dựng nền backend và frontend)
 
 **Backend: đã có nền, chưa có nghiệp vụ.**
 
@@ -169,11 +169,23 @@ Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. V�
 | B11 | `@nestjs/observe` đã gỡ (TD-09). Healthcheck compose dùng `${DB_NAME:-da_2026}` | H3, H4 cũ đã xử lý |
 | B12 | Chưa có: client Redis (TD-03), Swagger (TD-05), Google OAuth (TD-13), bản S3 của StorageService | Làm ở feature `auth` hoặc khi deploy |
 
-**Frontend và tài liệu:**
+**Frontend: đã có nền và design system, chưa có màn hình nghiệp vụ.**
+
+| # | Hiện trạng | Ghi chú |
+|---|---|---|
+| F1 | Design system cài đủ 6 bước của design/08: `styles/tokens.css`, `styles/components.css`, `app/globals.css`; Be Vietnam Pro (bộ `vietnamese`), `lang="vi"`, khoá light mode, `button.tsx` chỉnh theo bảng (bỏ size `xs`, `icon-xs` vì dưới 44px), `frontend/CLAUDE.md` có mục "Giao diện" | H1 cũ đã xử lý |
+| F2 | `components/ds/`: `dock`, `card-stack` (Card, seam, notch), `health-status`, `stat-row`, `states/` (rỗng, lỗi, skeleton, mất mạng) | |
+| F3 | Route (URL tiếng Anh): `(auth)` `/login`, `/register` (khuôn Biểu mẫu); `(user)` `/`, `/diagnose`, `/history`, `/plants`, `/library` (có dock, USER và ADMIN); `admin` `/admin`, `/admin/catalog` (chỉ ADMIN). Trang tạm, chưa có nghiệp vụ. Mọi route đều tĩnh (○) | TD-02 |
+| F4 | `lib/api/`: client duy nhất, base URL từ `NEXT_PUBLIC_API_URL` (`frontend/.env.example`), gắn Bearer, refresh một lần khi gặp 401, `ApiError` theo TD-05. Hợp đồng `/auth/refresh`, `/auth/logout` là **giả định** ở `auth-endpoints.ts` | TD-05, TD-12 |
+| F5 | `lib/auth/`: access token trong bộ nhớ, khôi phục phiên bằng refresh khi mở app, `RequireAuth` (chuyển tới `/login?next=…`), `postLoginRedirect` (ADMIN về `/admin`) | C4 UC01, OQ-22 |
+| F6 | `lib/device/`: `CameraService` + bản web (`getUserMedia`), nén ảnh (cạnh dài 1600px, JPEG 0.85, đề xuất), kiểm tra JPG/PNG ≤ 10 MB | design/06 |
+| F7 | Trang `/dev/*` (`app/dev/**/page.dev.tsx`) chỉ có khi `next dev` nhờ `pageExtensions` theo phase trong `next.config.ts`; bản build production không chứa chúng. Dùng để xem thành phần và khung trang không cần đăng nhập | |
+| F8 | Next.js 16.4.3 báo có lỗ hổng bảo mật đã công bố (npm advisories); `next build`/`next dev` đôi khi dừng lần đầu để nhắc. Chưa nâng cấp, chờ Dương quyết | |
+
+**Tài liệu:**
 
 | # | Hiện trạng | Ảnh hưởng |
 |---|---|---|
-| H1 | `frontend/`: font Inter (chỉ bộ latin), `lang="en"`, phím `d` đổi dark mode, `app/globals.css` là theme mặc định của shadcn | Chưa cài design system. Làm 6 bước ở `../design/08-nextjs-shadcn.md` trước màn hình đầu tiên (N3) |
 | H2 | `../design/08-nextjs-shadcn.md` ghi "frontend repo git riêng" | Đã lỗi thời: `code/` hiện là monorepo. `design/` vẫn nằm ngoài git |
 
 ## 10. Quyết định kỹ thuật (TechLead)

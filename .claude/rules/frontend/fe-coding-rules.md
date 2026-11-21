@@ -28,6 +28,10 @@ paths:
 | `lib/api/` | **Lớp duy nhất gọi backend**, kể cả giữ token và tự refresh | (đề xuất) [TD-02][TD-12] |
 | `lib/device/` | Lớp bọc API thiết bị: camera, thông báo, lưu tệp | [D 06] |
 | `components/<feature>/` | Component riêng của từng feature | (đề xuất) |
+| `components/layout/` | Khung trang: `UserPageShell` (hero/list/detail), `AdminPageShell`, `FormShell`, `AppTopbar` | Dựng 21/11 |
+| `components/ds/states/` | `EmptyState`, `ErrorState`, `Skeleton`/`PageSkeleton`, `OfflineBanner` (design/07) | Dựng 21/11 |
+| `lib/auth/` | `AuthProvider`/`useAuth`, `RequireAuth`, `postLoginRedirect`, `loginUrl` | Dựng 21/11 |
+| `app/dev/` | Trang kiểm tra giao diện, đặt tên `page.dev.tsx`: chỉ có khi `next dev`, bản build production không chứa (`next.config.ts`) | Dựng 21/11 |
 
 Mô tả màn hình của từng feature ở `../design/screens/<feature>.md` [TD-11].
 
@@ -39,14 +43,15 @@ Chưa chọn PWA hay Capacitor (hoãn). Code phải **chạy được ở cả h
 - **Không dùng** các tính năng mà bản tĩnh không hỗ trợ [Next `01-app/02-guides/static-exports.md`, mục Unsupported Features]:
   - Server Actions; Server Components lấy dữ liệu động; Route Handlers đọc `Request`.
   - `cookies()`, `rewrites`, `redirects`, `headers` trong `next.config`, `proxy`.
-  - Dynamic route (`[id]`) không có `generateStaticParams()`. Trang chi tiết theo id **(đề xuất)** dùng query string, ví dụ `/cay-trong/chi-tiet?id=12`, đọc bằng `useSearchParams`.
+  - Dynamic route (`[id]`) không có `generateStaticParams()`. Trang chi tiết theo id **(đề xuất)** dùng query string, ví dụ `/plants/detail?id=12`, đọc bằng `useSearchParams` và **bọc trong `<Suspense>`** (thiếu thì `next build` lỗi). URL viết tiếng Anh (Dương chốt 21/11, theo CLAUDE.md luật 10).
   - `next/image` với loader mặc định. Dùng `unoptimized` hoặc thẻ `img` (ảnh từ presigned URL của S3).
 - Bảo vệ route bằng kiểm tra phía client (layout hoặc hook kiểm tra phiên), không dùng `proxy`.
 - Kiểu dữ liệu của response viết tay theo `docs/<feature>/api_<feature>.md`, không đoán.
 
 ## 4. Xác thực và điều hướng [C4 UC01]
 
-- Mọi trang trừ đăng nhập và đăng ký đều yêu cầu đã đăng nhập. Chưa đăng nhập thì chuyển tới màn đăng nhập và nhớ trang đang định vào.
+- Mọi trang trừ đăng nhập và đăng ký đều yêu cầu đã đăng nhập. Chưa đăng nhập thì chuyển tới màn đăng nhập và nhớ trang đang định vào. Dùng sẵn: layout `app/(user)` và `app/admin` bọc `RequireAuth`; trang mới đặt trong đúng nhóm là được bảo vệ.
+- Sau khi đăng nhập, gọi `useAuth().signIn(accessToken)` rồi điều hướng tới `postLoginRedirect(role, next)`. Hợp đồng refresh/logout đang là giả định trong `lib/api/auth-endpoints.ts`, feature `auth` chốt.
 - Sau khi đăng nhập: `USER` quay về trang đã định vào (mặc định là trang chủ). `ADMIN` vào Dashboard [C4 5a].
 - ADMIN dùng được mọi trang của USER [OQ-22]. Giao diện có đường chuyển giữa khu quản trị và khu người dùng. Trang quản trị chặn `USER`.
 - **Giữ token [TD-12]:**

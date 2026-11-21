@@ -1,0 +1,203 @@
+/* ==========================================================================
+   tokens.css — nguồn sự thật duy nhất cho mọi giá trị thiết kế.
+   [REF] đọc/đo từ bộ homai  ·  [EXT] mở rộng cho app, ref không có.
+   Màn hình và component chỉ dùng biến ở đây, không hard-code giá trị.
+   Giao diện v1 chỉ có light mode.
+   ========================================================================== */
+:root {
+  /* 1. Nguyên thuỷ ------------------------------------------------------- */
+
+  /* Trung tính */
+  --neutral-0:   #FFFFFF; /* [REF] Clean White */
+  --neutral-50:  #FAFAFA; /* [REF] hàng xen kẽ trong list */
+  --neutral-100: #F7F7F7; /* [REF] Gray Whisper */
+  --neutral-150: #F5F5F5; /* [REF] nền trang phụ */
+  --neutral-200: #F2F2F2; /* [REF] viền mảnh, vòng hào quang */
+  --neutral-300: #E6E6E6; /* [REF] cột biểu đồ chưa kích hoạt, vòng dial */
+  --neutral-400: #C9C9C9; /* [EXT] icon/nút disabled */
+  --neutral-500: #8A8A8A; /* [EXT] chữ phụ cấp 3, chỉ cho nội dung không thiết yếu */
+  --neutral-600: #6E6E6E; /* [EXT] chữ phụ; ref dùng ~#838383 nhưng không đạt AA */
+  --neutral-800: #333333; /* [REF] nút tròn trong dock */
+  --neutral-900: #282828; /* [REF] Lunar Shadow */
+
+  /* Oliu */
+  --olive-25:  #F9FAEF; /* [REF] dải nhạt của sọc mềm */
+  --olive-50:  #F4F7E4; /* [REF] nền icon tròn, nền thẻ nhạt */
+  --olive-100: #E9EFC8; /* [EXT] */
+  --olive-200: #DCE696; /* [REF] */
+  --olive-300: #D0DB8B; /* [REF] dải nhạt của sọc oliu */
+  --olive-400: #CBD77E; /* [REF] Gentle Olive, accent 1 */
+  --olive-600: #8F9E45; /* [EXT] chỉ cho đồ hoạ lớn, không cho chữ */
+  --olive-700: #66752A; /* [EXT] chữ/icon oliu trên nền sáng, 5.07:1 trên trắng */
+  --olive-800: #4C5720; /* [EXT] chữ trên nền oliu nhạt */
+
+  /* Hazel */
+  --hazel-50:  #F5F0ED; /* [REF] */
+  --hazel-200: #EFDEC0; /* [REF] phần dưới capsule slider */
+  --hazel-400: #E6CA9A; /* [REF] Winter Hazel, accent 2 */
+  --hazel-600: #B8935A; /* [EXT] */
+  --hazel-700: #84652F; /* [EXT] chữ hazel trên nền sáng */
+
+  /* Phụ trợ */
+  --sage-200: #E1E3D7;  /* [REF] nền màn hình hero */
+  --red-50:   #F8ECEA;  /* [EXT] */
+  --red-500:  #B94444;  /* [REF] chấm thông báo */
+  --red-700:  #8E3232;  /* [EXT] */
+  --sky-50:   #EAF3FB;  /* [EXT] */
+  --sky-300:  #B4D7F3;  /* [REF] giọt mưa */
+  --sky-700:  #2F6186;  /* [EXT] */
+
+  /* 2. Ngữ nghĩa — component dùng lớp này --------------------------------- */
+
+  --bg-page: var(--neutral-100);
+  --bg-hero: var(--sage-200);
+
+  --surface:             var(--neutral-0);
+  --surface-muted:       var(--neutral-100);
+  --surface-sunken:      var(--neutral-200);
+  --surface-inverse:     var(--neutral-900);
+  --surface-inverse-2:   var(--neutral-800);
+  --surface-accent:      var(--olive-400);
+  --surface-accent-soft: var(--olive-50);
+  --surface-warm:        var(--hazel-400);
+  --surface-warm-soft:   var(--hazel-50);
+
+  --text-primary:   var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary:  var(--neutral-500);
+  --text-inverse:   var(--neutral-0);
+  --text-on-accent: var(--neutral-900); /* luôn tối trên oliu và hazel */
+  --text-accent:    var(--olive-700);
+
+  --line-hairline: var(--neutral-200);
+  --line-default:  var(--neutral-300);
+  --focus-ring:    var(--olive-700);
+
+  /* Trạng thái sức khoẻ cây [EXT] */
+  --status-healthy-bg: var(--olive-50);
+  --status-healthy-fg: var(--olive-800);
+  --status-healthy-solid: var(--olive-400);
+  --status-watch-bg: #F7EEDD;
+  --status-watch-fg: #6F5425;
+  --status-watch-solid: var(--hazel-400);
+  --status-severe-bg: var(--red-50);
+  --status-severe-fg: var(--red-700);
+  --status-severe-solid: var(--red-500);
+  --status-info-bg: var(--sky-50);
+  --status-info-fg: var(--sky-700);
+  --status-info-solid: var(--sky-300);
+
+  /* 3. Chữ ---------------------------------------------------------------- */
+
+  /* Sora của ref thiếu dấu tiếng Việt. Be Vietnam Pro thay thế 1:1. */
+  --font-sans: var(--font-be-vietnam, "Be Vietnam Pro"), system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Dùng: font: var(--type-h1); */
+  --type-display:  600 clamp(36px, 1.6rem + 2.8vw, 56px)/1.2 var(--font-sans);
+  --type-h1:       600 clamp(28px, 1.35rem + 1.5vw, 42px)/1.2 var(--font-sans);
+  --type-h2:       600 clamp(22px, 1.2rem + .5vw, 28px)/1.25 var(--font-sans);
+  --type-h3:       600 20px/1.35 var(--font-sans);
+  --type-title:    600 16px/1.35 var(--font-sans);
+  --type-body-lg:  400 18px/1.55 var(--font-sans);
+  --type-body:     400 16px/1.55 var(--font-sans);
+  --type-body-sm:  400 14px/1.5 var(--font-sans);
+  --type-caption:  400 12px/1.4 var(--font-sans);
+  --type-label:    600 14px/1.2 var(--font-sans);
+  --type-overline: 600 11px/1.2 var(--font-sans);
+  --type-num-xl:   300 48px/1 var(--font-sans);
+  --type-num-lg:   300 32px/1 var(--font-sans);
+  --type-num-md:   500 24px/1 var(--font-sans);
+  --type-num-sm:   600 16px/1 var(--font-sans);
+  --type-unit:     400 11px/1.2 var(--font-sans);
+
+  --tracking-tight: -0.01em;
+  --tracking-overline: 0.08em;
+
+  /* 4. Bán kính ----------------------------------------------------------- */
+
+  --r-xs: 8px;     /* [REF] hàng list */
+  --r-sm: 12px;    /* [REF] cột biểu đồ */
+  --r-md: 16px;    /* [EXT] khối nhỏ lồng trong card */
+  --r-lg: 24px;    /* [EXT] khối lồng, bottom sheet */
+  --r-xl: 32px;    /* [REF] card chính, ảnh */
+  --r-full: 9999px;/* [REF] nút, chip, dock, input */
+
+  /* 5. Khoảng cách (lưới 4px) --------------------------------------------- */
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-15: 60px;
+  --s-20: 80px;
+  --s-30: 120px;
+
+  --gutter-mobile: 10px;   /* [REF] card sát mép màn hình */
+  --gutter-desktop: 60px;  /* [REF] tại 1440 */
+  --gap-card: 8px;         /* [REF] mobile */
+  --gap-card-desktop: 20px;/* [REF] desktop */
+  --container-max: 1320px; /* [REF] */
+
+  /* 6. Kích thước điều khiển ---------------------------------------------- */
+
+  --ctl-sm: 44px;  /* tối thiểu cho vùng chạm */
+  --ctl-md: 52px;  /* [REF] nút, input, nút tròn */
+  --ctl-lg: 64px;  /* [EXT] nút chính dạng tròn */
+  --chip-h: 46px;  /* [REF] */
+  --banner-h: 70px;/* [REF] action pill */
+  --dock-btn: 54px;/* [REF] */
+  --dock-gap: 4px; /* [REF] */
+  --dock-pad: 5px; /* [REF] */
+  --icon-sm: 18px;
+  --icon-md: 24px;
+  --icon-lg: 28px;
+
+  /* Khớp nối card [REF] */
+  --seam-h: 8px;
+  --seam-neck: 130px;
+  --notch-w: 120px;
+  --notch-h: 10px;
+  --notch-handle-w: 84px;
+  --notch-handle-h: 5px;
+
+  /* 7. Độ nổi ------------------------------------------------------------- */
+
+  /* Ref tạo chiều sâu bằng lớp tông. Bóng chỉ dành cho lớp nổi thật sự. */
+  --shadow-none: none;
+  --shadow-float: 0 16px 40px rgba(40, 40, 40, .08);
+  --shadow-sheet: 0 -8px 32px rgba(40, 40, 40, .08);
+
+  /* 8. Hoạ tiết [REF] ----------------------------------------------------- */
+
+  --stripe-olive: repeating-linear-gradient(135deg, var(--olive-400) 0 12px, var(--olive-300) 12px 32px);
+  --stripe-bar:   repeating-linear-gradient(0deg, var(--olive-400) 0 14px, #D3DD93 14px 28px);
+  --stripe-soft:  repeating-linear-gradient(135deg, #F4F6E3 0 24px, var(--olive-25) 24px 48px);
+  --stripe-dark:  repeating-linear-gradient(135deg, var(--neutral-900) 0 16px, var(--neutral-800) 16px 32px);
+  --dots-sage:    radial-gradient(circle, var(--neutral-0) 1.4px, transparent 1.6px);
+
+  /* 9. Chuyển động [EXT] -------------------------------------------------- */
+
+  --ease-standard: cubic-bezier(.2, .8, .2, 1);
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+
+  /* 10. Lớp --------------------------------------------------------------- */
+
+  --z-dock: 50;
+  --z-sheet: 60;
+  --z-toast: 70;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}

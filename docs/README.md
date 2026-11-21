@@ -95,11 +95,12 @@ Thứ tự gợi ý **(đề xuất, Dương quyết)**, dựa trên phụ thu�
 |---|---|---|---|
 | N1 | Chốt DC-01 → DC-12, sửa `_nguon_sinh_tu_dong/model.py` rồi chạy lại để có SQL, DBML, PUML khớp nhau; cập nhật `data_model.md` | `open_questions.md` mục C | DC-01 → DC-11 đã chốt, `data_model.md` đã cập nhật. Sửa nguồn ngoài repo: hoãn (DC-12) |
 | N2 | Chốt TD-02, TD-05, TD-06 (đóng gói, chuẩn API, cổng chạy) | `technical_overview.md` mục 10 | Xong (TD-02 hoãn, kèm ràng buộc code tương thích) |
-| N3 | Cài design system vào `frontend/` (6 bước) | `../design/08-nextjs-shadcn.md` | Chưa làm |
+| N3 | Cài design system vào `frontend/` (6 bước) | `../design/08-nextjs-shadcn.md` | Xong 21/11 |
 | N4 | Migration đầu tiên, script seed, `backend/.env.example` | `.claude/rules/backend/database-rules.md` mục 6 | Xong 21/11 (dựng nền backend) |
 | N5 | Chốt hợp đồng AI service với nhóm AI (OQ-05, OQ-06, TD-04) | `technical_overview.md` mục 5 | Một phần: OQ-05 chốt tạm, OQ-06 chờ giá trị ngưỡng, TD-04 dùng mock |
 | N6 | Gỡ `@nestjs/observe` (TD-09), đặt cổng backend 4000 (TD-06) | `open_questions.md` mục B | Xong 21/11 |
 | N7 | Nền backend: config, CSDL, entity, seed, guard, filter, StorageService, AiClient | Phiên 21/11 | Xong 21/11. Chưa có controller nghiệp vụ |
+| N8 | Nền frontend: design system, `components/ds/`, khung route 3 nhóm, `lib/api`, `lib/auth`, `lib/device`, trạng thái dùng chung | Phiên 21/11 | Xong 21/11. Chưa có màn hình nghiệp vụ |
 
 ## 5. Cấu trúc một thư mục feature
 

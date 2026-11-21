@@ -39,7 +39,7 @@ Lấy từ `../design/06-layout-responsive.md`. Màn hình cụ thể mô tả �
 | Font Be Vietnam Pro | Chờ nhóm xác nhận khi xem preview |
 | Light mode cho v1 | Đã chốt |
 | Tên sản phẩm, logo | Chưa có. Không dùng lại tên và logo của bộ tham chiếu |
-| Cài design system vào `frontend/` | **Chưa làm** (technical_overview H1) |
+| Cài design system vào `frontend/` | Đã làm 21/11 (6 bước của design/08). Thành phần có sẵn ở `frontend/components/ds/`; xem chạy thật ở `/dev/design-check` khi dev |
 | Cách đóng gói app | Hoãn chọn công cụ (TD-02). Code phải tương thích cả PWA lẫn Capacitor, xem `fe-coding-rules.md` mục 3 |
 | Danh sách màn hình | Chưa định nghĩa, làm ở bước 6 theo từng feature, lưu ở `../design/screens/` |
 
