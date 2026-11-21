@@ -1,8 +1,9 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { existsSync } from 'node:fs';
 import { DataSource } from 'typeorm';
-import { AppModule } from '../src/app.module.js';
+import { validateEnv } from '../src/config/env.validation.js';
 import { configureApp } from '../src/configure-app.js';
 
 /**
@@ -13,6 +14,12 @@ describe('App (e2e)', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
+    // Kiểm tra biến môi trường TRƯỚC khi nạp AppModule: thiếu khoá thì báo một lỗi
+    // rõ tên khoá, thay vì lỗi lúc import (vitest báo thành Unhandled Rejection).
+    if (existsSync('.env')) process.loadEnvFile('.env');
+    validateEnv(process.env);
+    const { AppModule } = await import('../src/app.module.js');
+
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

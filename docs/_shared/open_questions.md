@@ -7,6 +7,8 @@
 
 > **Chế độ build-first (20/11/2026):** Dương chốt các mục dưới đây để bắt đầu code. Mục "Đã chốt (20/11, build-first)" được dùng ngay. Toàn bộ sẽ được review lại ở giai đoạn test. Nguồn gốc ngoài repo (docx, SQL, ảnh ERD/UC) **chưa** được cập nhật theo các quyết định này (DC-12). Trạng thái "Hoãn" nghĩa là bản build này không làm, hoặc chưa cần chọn.
 
+> **Đang chờ Dương duyệt (cập nhật 21/11):** OQ-29, OQ-30, TD-14 → TD-20 (TD-19 chờ nhóm AI), cùng giá trị ngưỡng của OQ-06. Các mục này phát sinh khi dựng nền backend và frontend; code đang chạy theo cột "Đề xuất".
+
 **Cách đóng một mục:** điền cột "Quyết định", đổi trạng thái thành `Đã chốt (ngày)`, cập nhật specs, `data_model.md` và nguồn gốc (docx/SQL) cho khớp.
 
 ## A. Nghiệp vụ (OQ)
@@ -41,6 +43,8 @@
 | OQ-26 | "Báo Quản trị viên" khi mô hình trả `class_code` lạ: báo qua kênh nào *[rà soát 20/11]* | ERD-doc 6.5, 7.4 | — | diagnosis, dashboard | Dương | Ghi log mức ERROR và tạo `notifications` cho mọi ADMIN (`reminder_id = NULL`), không gửi trùng cho cùng một `class_code` | Đã chốt (20/11, build-first) |
 | OQ-27 | AUTH-04: tài khoản chỉ dùng Google (`password_hash` NULL) không có mật khẩu cũ để đổi. Quy tắc mật khẩu mới *[phát sinh 20/11]* | FL AUTH-04; ERD-doc 4.1 | — | auth | Dương | Tài khoản không có `password_hash` thì ẩn mục đổi mật khẩu. Đổi mật khẩu: nhập mật khẩu cũ, mật khẩu mới theo `specs_auth.md` BR-05, có ô xác nhận | Đã chốt (20/11, build-first) |
 | OQ-28 | Tiêu chí gắn nhãn "Đang phổ biến" (OQ-10): bao nhiêu bệnh, từ bao nhiêu lượt *[phát sinh 20/11]* | C4 UC05 bước 2; FL LIB-03 | — | disease_library | Dương | Top N bệnh theo số lượt `DISEASE` có độ tin cậy ≥ ngưỡng trong 30 ngày (chỉ bệnh có ít nhất 1 lượt). N và số ngày để trong cấu hình; giá trị N chọn khi làm `disease_library` | Đã chốt (20/11, build-first) |
+| OQ-29 | Câu lỗi dự phòng của backend khi feature chưa ném lỗi riêng (`backend/src/common/exceptions/default-errors.ts`): `BAD_REQUEST` "Yêu cầu không hợp lệ", `UNAUTHORIZED` "Vui lòng đăng nhập", `FORBIDDEN` "Bạn không có quyền thực hiện thao tác này", `NOT_FOUND` "Không tìm thấy dữ liệu", `INTERNAL_ERROR` "Đã có lỗi xảy ra, vui lòng thử lại sau", `VALIDATION_ERROR` "Dữ liệu không hợp lệ" *[phát sinh 21/11, dựng nền backend]* | — (Claude soạn) | Giữ như đang có | Mọi feature | Dương | | Chờ Dương duyệt |
+| OQ-30 | Câu chữ phía frontend do Claude soạn: lỗi mạng "Không kết nối được máy chủ. Kiểm tra mạng và thử lại."; không có quyền "Bạn không có quyền truy cập trang này."; 404 "Không tìm thấy trang."; trang tạm "Trang đang được xây dựng." ("Đang ngoại tuyến." lấy từ design/07, không cần duyệt) *[phát sinh 21/11, dựng nền frontend]* | — (Claude soạn) | Giữ như đang có | Mọi feature | Dương | | Chờ Dương duyệt |
 
 ## B. Kỹ thuật (TD) — TechLead quyết
 
@@ -60,6 +64,12 @@
 | TD-12 | Frontend giữ access token và refresh token ở đâu *[phát sinh 20/11]* | fe-coding-rules mục 4 (chờ TD-02, TD-05) | auth, mọi feature frontend | Access token ngắn hạn giữ trong bộ nhớ. Refresh token trong cookie httpOnly, SameSite=Lax, path `/api/v1/auth` (để cả refresh lẫn đăng xuất đọc được). Backend có thể cần `cookie-parser` (hỏi khi làm). Khi đóng gói Capacitor chỉ đổi nơi lưu trong `lib/api`. Khi triển khai, frontend và backend phải cùng site | Đã chốt (20/11, build-first) |
 | TD-13 | Google OAuth làm ngay hay để sau *[phát sinh 20/11]* | C4 UC01; FL AUTH-01, 02 (Must) | auth | Làm ngay trong `auth`. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` để trống trong `.env.example`, Dương tự tạo OAuth Client. Thư viện hỏi khi `/feature-dev auth` | Đã chốt (20/11, build-first) |
 | TD-14 | Cột ảnh `*_url` (`users.avatar_url`, `plants.avatar_url`, `diagnoses.*_image_url`…) lưu khoá đối tượng S3 hay URL đầy đủ, khi bucket riêng tư và API trả presigned URL (TD-01) *[phát sinh 21/11]* | TD-01; `data_model.md` | Entity đầu tiên có cột ảnh (auth) | | Chưa chốt |
+| TD-15 | Hợp đồng làm mới phiên và đăng xuất mà frontend đang giả định: `POST /api/v1/auth/refresh` (refresh token trong cookie) trả `{ accessToken }`; `POST /api/v1/auth/logout` thu hồi refresh token. Gom ở `frontend/lib/api/auth-endpoints.ts` *[phát sinh 21/11]* | Đề xuất: giữ, chốt chính thức trong `api_auth.md` khi `/gen-docs auth` | auth | | Chờ Dương duyệt |
+| TD-16 | Tham số bảo mật mặc định do Claude chọn: access token 15 phút, refresh token 7 ngày (`backend/.env.example`), bcrypt 10 vòng (seed) *[phát sinh 21/11]* | Đề xuất: giữ; đổi được qua `.env` | auth | | Chờ Dương duyệt |
+| TD-17 | Nén ảnh phía trình duyệt: cạnh dài tối đa 1600px, JPEG chất lượng 0.85 (`frontend/lib/device/image.ts`). Không resize 224×224 *[phát sinh 21/11]* | Đề xuất: giữ, nhóm AI xem ảnh nén có đủ chi tiết không | diagnosis | | Chờ Dương duyệt |
+| TD-18 | Next.js 16.4.3 bị npm advisories báo có lỗ hổng bảo mật đã công bố; `next build`/`next dev` dừng một lần để nhắc. Nâng cấp là đổi dependency *[phát sinh 21/11]* | Đề xuất: nâng lên bản vá cùng nhánh 16.x trong một phiên riêng, chạy lại lint/typecheck/build | frontend | | Chờ Dương duyệt |
+| TD-19 | Dạng JSON của `GET /labels` (AI service). `HttpAiClient` đang tạm nhận mảng chuỗi `class_code` *[phát sinh 21/11]* | Hỏi nhóm AI | diagnosis, catalog | | Chờ Dương duyệt (nhóm AI) |
+| TD-20 | `button.tsx` lệch bảng design/08 ở chỗ bảng không nói: bỏ size `xs`, `icon-xs` (dưới vùng chạm 44px), đổi `lg` thành 64px (`--ctl-lg`) *[phát sinh 21/11]* | Đề xuất: giữ | frontend | | Chờ Dương duyệt |
 
 ## C. Lệch giữa các nguồn dữ liệu (DC) *[rà soát 20/11]*
 
