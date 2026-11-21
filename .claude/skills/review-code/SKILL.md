@@ -10,7 +10,7 @@ disable-model-invocation: true
 Feature: `$ARGUMENTS`. Tên lệnh khác `/review` và `/code-review` có sẵn của Claude Code.
 
 ## 1. Phạm vi review
-- Lấy thay đổi bằng `git diff main...HEAD` trên nhánh `feat/$ARGUMENTS`. Nếu chưa commit thì dùng `git diff` và `git diff --staged`.
+- Lấy thay đổi của feature trên nhánh đang dùng (mặc định `tduong-dev`): các commit `feat($ARGUMENTS)…`/`fix($ARGUMENTS)…` (`git log --oneline --grep "($ARGUMENTS)"` rồi `git show`), hoặc `git diff main...HEAD` nếu cả nhánh chỉ có feature này. Nếu chưa commit thì dùng `git diff` và `git diff --staged`.
 - Đọc `docs/$ARGUMENTS/` (specs, api, database_design), `../design/screens/$ARGUMENTS.md` (màn hình, TD-11), `docs/_shared/data_model.md`, toàn bộ `.claude/rules/`.
 
 ## 2. Checklist

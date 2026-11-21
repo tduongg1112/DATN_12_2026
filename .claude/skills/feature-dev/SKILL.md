@@ -33,7 +33,7 @@ Liệt kê các bước nhỏ, mỗi bước có file cần sửa và cách ki�
 Đánh dấu bước nào đụng tới mục chưa chốt. **Chờ Dương đồng ý mới làm.**
 
 ## 4. Cài đặt
-- Làm trên nhánh `feat/$ARGUMENTS` (tạo nếu chưa có, sau khi hỏi Dương).
+- Làm trên nhánh đang dùng (mặc định `tduong-dev`, Dương chốt 21/11). Không bắt buộc tạo nhánh riêng cho feature; chỉ tạo khi Dương yêu cầu.
 - Làm từng bước. Sau mỗi bước chạy lint, typecheck và test liên quan. Lỗi thì sửa ngay rồi mới đi tiếp.
 - Đang code mà phát hiện tài liệu sai hoặc thiếu: dừng bước đó, báo cho Dương. Nếu được đồng ý thì cập nhật `docs/$ARGUMENTS/` trước, sau đó mới code tiếp.
 - Không sửa ngoài phạm vi feature. Không thêm dependency khi chưa hỏi.

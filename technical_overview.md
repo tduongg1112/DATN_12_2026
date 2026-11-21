@@ -134,7 +134,7 @@ Phía backend, mọi lời gọi AI service đi qua một interface client duy n
 | Docker | Đề cương dự kiến triển khai bằng Docker. Hiện mới có compose cho DB và Redis |
 | CI/CD | Chưa có |
 | Git | Monorepo `code/` với nhánh `main` và remote `origin`. Xem lịch sử bằng `git log`. Bản sao `.git` cũ của hai repo riêng được lưu ở `../git-backup-20261108/` |
-| Commit | Conventional Commits. Đề xuất mỗi feature một nhánh `feat/<feature>`, merge vào `main` sau bước 11 |
+| Commit | Conventional Commits. Phát triển trên nhánh `tduong-dev`, merge vào `main` sau bước 11; không bắt buộc nhánh riêng cho feature (Dương chốt 21/11) |
 | Biến môi trường | `.env` bị ignore ở cả gốc lẫn `backend/`. Mẫu ở `backend/.env.example`. Backend kiểm tra biến khi khởi động (`src/config/env.validation.ts`): thiếu hoặc sai thì dừng và nêu tên khoá. Migration và seed chỉ cần `DB_*` (seed cần thêm `ADMIN_*`) |
 | Tài liệu ngoài git | `../design/`, gồm mô tả màn hình ở `../design/screens/<feature>.md` (TD-11) và nguồn SRS ở thư mục cha |
 

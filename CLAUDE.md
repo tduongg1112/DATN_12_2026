@@ -80,5 +80,5 @@ Gặp CR (yêu cầu thay đổi) hoặc sửa lỗi trên feature đã xong: v�
 
 - **Feature**: tên thư mục dạng snake_case, gồm `auth`, `diagnosis`, `history`, `my_plants`, `disease_library`, `catalog`, `dashboard`. Bảng ánh xạ sang UC và Function List ở `docs/README.md`.
 - **Mã truy vết**: UC theo Chương 4 (UC01–UC07). Chức năng theo Function List v0.2 (AUTH-01, DIAG-04…). Trong specs, user story đánh số `US-xx`, quy tắc nghiệp vụ `BR-xx`. Câu hỏi mở `OQ-xx`, quyết định kỹ thuật `TD-xx`, lệch nguồn dữ liệu `DC-xx`.
-- **Git**: nhánh `main`. Commit theo Conventional Commits (`feat:`, `fix:`, `docs:`…), commit đầu tiên của repo đã theo kiểu này. Đề xuất mỗi feature một nhánh `feat/<feature>`. Chỉ commit hoặc push khi Dương yêu cầu.
+- **Git**: nhánh `main`. Commit theo Conventional Commits (`feat:`, `fix:`, `docs:`…), commit đầu tiên của repo đã theo kiểu này. Phát triển trực tiếp trên nhánh `tduong-dev`, không bắt buộc nhánh riêng cho feature (Dương chốt 21/11). Commit không thêm dòng `Co-Authored-By` của Claude. Chỉ commit hoặc push khi Dương yêu cầu.
 - **Người duyệt** mọi cổng chặn: Nguyễn Tùng Dương. Nhóm AI (Phan Lê Huy, Nguyễn Chí Hiếu) duyệt các phần đụng tới mô hình và AI service.
