@@ -81,7 +81,7 @@ Thứ tự gợi ý **(đề xuất, Dương quyết)**, dựa trên phụ thu�
 
 | # | Feature | UC | Mã chức năng (M/S/C) | Phụ thuộc | Còn chặn | specs | docs | code | test |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | TD-14 (cột `avatar_url`), TD-15 (hợp đồng refresh), TD-16; cần `GOOGLE_CLIENT_ID` khi chạy thử Google | VERIFIED (build-first) | — | — | — |
+| 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | Cần `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` khi chạy thử Google thật | VERIFIED (build-first) | REVIEWED (build-first) · [api](auth/api_auth.md), [db](auth/database_design_auth.md), `../design/screens/auth.md` | DONE (build-first) | — |
 | 2 | [`catalog`](catalog/specs_catalog.md) | UC06 | ADM-01, 02, 07 (2/0/1) | auth | — | VERIFIED (build-first) | — | — | — |
 | 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | Giá trị ngưỡng OQ-06 (chờ nhóm AI) | VERIFIED (build-first) | — | — | — |
 | 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | — | — | — |

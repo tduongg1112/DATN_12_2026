@@ -38,6 +38,7 @@ export const ROUTES = {
   home: "/",
   login: "/login",
   register: "/register",
+  profile: "/profile",
   adminHome: "/admin",
 } as const
 

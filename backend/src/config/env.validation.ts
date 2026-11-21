@@ -90,7 +90,7 @@ export class EnvironmentVariables extends DatabaseEnvironment {
 
   @IsString()
   @IsNotEmpty()
-  JWT_ACCESS_EXPIRES_IN: string = '15m';
+  JWT_ACCESS_EXPIRES_IN: string = '30m';
 
   @IsString()
   @MinLength(32)

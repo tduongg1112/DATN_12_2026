@@ -28,17 +28,20 @@ interface RequireAuthProps {
  * Chưa đăng nhập: chuyển tới màn đăng nhập, nhớ trang định vào.
  */
 export function RequireAuth({ children, roles = ["USER"] }: RequireAuthProps) {
-  const { status, user } = useAuth()
+  const { status, user, signedOut } = useAuth()
   const router = useRouter()
 
   React.useEffect(() => {
     if (status === "anonymous") {
+      // Vừa đăng xuất: về màn đăng nhập, không nhớ trang cũ (BR-12).
       // Đọc từ window để không phải bọc Suspense cho useSearchParams.
       router.replace(
-        loginUrl(window.location.pathname + window.location.search)
+        signedOut
+          ? ROUTES.login
+          : loginUrl(window.location.pathname + window.location.search)
       )
     }
-  }, [status, router])
+  }, [status, signedOut, router])
 
   if (status !== "authenticated" || !user) {
     return (

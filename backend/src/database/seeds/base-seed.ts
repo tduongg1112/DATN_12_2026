@@ -1,6 +1,6 @@
-import bcrypt from 'bcrypt';
 import type { EntityManager } from 'typeorm';
 import { User } from '../../modules/accounts/entities/user.entity.js';
+import { hashPassword } from '../../modules/accounts/password.js';
 import { Crop } from '../../modules/catalog/entities/crop.entity.js';
 
 /** 5 loại cây trong phạm vi (ERD 4.2, 7.2). Chu kỳ tưới, bón để NULL: nhóm điền sau. */
@@ -11,8 +11,6 @@ export const BASE_CROPS = [
   { code: 'CHILI', name: 'Ớt' },
   { code: 'POTATO', name: 'Khoai tây' },
 ] as const;
-
-const BCRYPT_ROUNDS = 10;
 
 export interface BaseSeedResult {
   adminCreated: boolean;
@@ -34,7 +32,7 @@ export async function runBaseSeed(
     await users.insert({
       fullName: 'Quản trị viên',
       email,
-      passwordHash: await bcrypt.hash(admin.password, BCRYPT_ROUNDS),
+      passwordHash: await hashPassword(admin.password),
       role: 'ADMIN',
     });
     adminCreated = true;

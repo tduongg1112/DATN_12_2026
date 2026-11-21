@@ -9,6 +9,7 @@ import { ADMIN_NAV, ROUTES, USER_NAV } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 
 import { AppTopbar } from "./app-topbar"
+import { UserMenu } from "./user-menu"
 
 /** Khuôn trang theo design/06. */
 export type UserLayout = "hero" | "list" | "detail"
@@ -62,6 +63,7 @@ export function UserPageShell({
         <AppTopbar
           title={title}
           backHref={backHref}
+          leading={<UserMenu />}
           actions={
             <>
               {actions}
@@ -86,7 +88,12 @@ export function AdminPageShell({
     <div className="app-shell">
       <Dock items={ADMIN_NAV} label="Điều hướng quản trị" />
       <main className="mx-auto w-full max-w-[var(--container-max)] min-w-0">
-        <AppTopbar title={title} backHref={backHref} actions={actions} />
+        <AppTopbar
+          title={title}
+          backHref={backHref}
+          leading={<UserMenu />}
+          actions={actions}
+        />
         {children}
       </main>
     </div>

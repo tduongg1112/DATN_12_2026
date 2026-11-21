@@ -9,15 +9,26 @@ import {
   refreshAccessToken,
   tokenStore,
 } from "@/lib/api"
+import { accountsApi } from "@/lib/api/accounts"
+import type { UserProfile } from "@/lib/types/account"
 
 import { decodeAccessToken, type SessionUser } from "./session"
 
 type AuthStatus = "loading" | "authenticated" | "anonymous"
+type ProfileStatus = "idle" | "loading" | "ready" | "error"
 
 interface AuthContextValue {
   status: AuthStatus
   user: SessionUser | null
-  /** Feature auth gọi sau khi đăng nhập hoặc đăng ký thành công. */
+  /** Hồ sơ (U1), tải sau khi có phiên. Dùng cho avatar, menu, trang hồ sơ. */
+  profile: UserProfile | null
+  profileStatus: ProfileStatus
+  reloadProfile: () => Promise<void>
+  /** Cập nhật hồ sơ sau khi sửa (U2) mà không cần tải lại. */
+  setProfile: (profile: UserProfile) => void
+  /** true khi người dùng vừa chủ động đăng xuất: về /login, không nhớ trang cũ (BR-12). */
+  signedOut: boolean
+  /** Gọi sau khi đăng nhập hoặc đăng ký thành công. */
   signIn: (accessToken: string) => SessionUser | null
   /** Thu hồi refresh token ở backend (nếu được) và xoá phiên phía client. */
   signOut: () => Promise<void>
@@ -32,14 +43,42 @@ const AuthContext = React.createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = React.useState<AuthStatus>("loading")
   const [user, setUser] = React.useState<SessionUser | null>(null)
+  const [profile, setProfileState] = React.useState<UserProfile | null>(null)
+  const [profileStatus, setProfileStatus] =
+    React.useState<ProfileStatus>("idle")
+  const [signedOut, setSignedOut] = React.useState(false)
+  const profileRequest = React.useRef(0)
 
-  const applyToken = React.useCallback((token: string | null) => {
-    const next = token ? decodeAccessToken(token) : null
-    tokenStore.set(next ? token : null)
-    setUser(next)
-    setStatus(next ? "authenticated" : "anonymous")
-    return next
+  const reloadProfile = React.useCallback(async () => {
+    const requestId = ++profileRequest.current
+    setProfileStatus("loading")
+    try {
+      const next = await accountsApi.me()
+      if (profileRequest.current !== requestId) return
+      setProfileState(next)
+      setProfileStatus("ready")
+    } catch {
+      if (profileRequest.current === requestId) setProfileStatus("error")
+    }
   }, [])
+
+  const applyToken = React.useCallback(
+    (token: string | null) => {
+      const next = token ? decodeAccessToken(token) : null
+      tokenStore.set(next ? token : null)
+      setUser(next)
+      setStatus(next ? "authenticated" : "anonymous")
+      if (next) {
+        void reloadProfile()
+      } else {
+        profileRequest.current++
+        setProfileState(null)
+        setProfileStatus("idle")
+      }
+      return next
+    },
+    [reloadProfile]
+  )
 
   React.useEffect(() => {
     let cancelled = false
@@ -53,18 +92,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [applyToken])
 
+  const signIn = React.useCallback(
+    (accessToken: string) => {
+      setSignedOut(false)
+      return applyToken(accessToken)
+    },
+    [applyToken]
+  )
+
   const signOut = React.useCallback(async () => {
     try {
       await api.post(AUTH_ENDPOINTS.logout, undefined, { auth: false })
     } catch {
       // Đăng xuất phía client vẫn tiếp tục dù backend không phản hồi.
     }
+    setSignedOut(true)
     applyToken(null)
   }, [applyToken])
 
+  const setProfile = React.useCallback((next: UserProfile) => {
+    profileRequest.current++
+    setProfileState(next)
+    setProfileStatus("ready")
+  }, [])
+
   const value = React.useMemo(
-    () => ({ status, user, signIn: applyToken, signOut }),
-    [status, user, applyToken, signOut]
+    () => ({
+      status,
+      user,
+      profile,
+      profileStatus,
+      reloadProfile,
+      setProfile,
+      signedOut,
+      signIn,
+      signOut,
+    }),
+    [
+      status,
+      user,
+      profile,
+      profileStatus,
+      reloadProfile,
+      setProfile,
+      signedOut,
+      signIn,
+      signOut,
+    ]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

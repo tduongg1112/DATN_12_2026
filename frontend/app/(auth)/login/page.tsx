@@ -1,16 +1,16 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
-import { Construction } from "lucide-react"
 
-import { EmptyState } from "@/components/ds/states"
+import { LoginView } from "@/components/auth/login-view"
+import { PageSkeleton } from "@/components/ds/states"
 
 export const metadata: Metadata = { title: "Đăng nhập" }
 
-/** Trang tạm. Màn thật làm ở feature auth (specs_auth). */
+/** S1 (design/screens/auth.md). Đọc `?next=`, `?error=` nên bọc Suspense (Next 16). */
 export default function Page() {
   return (
-    <>
-      <h1 className="m-0 mb-6 type-h1">Đăng nhập</h1>
-      <EmptyState icon={Construction} message="Trang đang được xây dựng." />
-    </>
+    <Suspense fallback={<PageSkeleton label="Đang tải" />}>
+      <LoginView />
+    </Suspense>
   )
 }

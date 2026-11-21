@@ -2,6 +2,7 @@ export { AUTH_ENDPOINTS } from "./auth-endpoints"
 export {
   api,
   apiRequest,
+  apiUrl,
   onSessionExpired,
   refreshAccessToken,
   type RequestOptions,
