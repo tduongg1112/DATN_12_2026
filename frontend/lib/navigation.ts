@@ -39,8 +39,39 @@ export const ROUTES = {
   login: "/login",
   register: "/register",
   profile: "/profile",
+  library: "/library",
+  diagnose: "/diagnose",
   adminHome: "/admin",
 } as const
+
+/** "Xem tất cả" kèm bộ lọc trên URL, để quay lại vẫn giữ bộ lọc (design/screens/disease_library.md S2). */
+export function libraryHref(filter: {
+  cropId?: number | null
+  q?: string
+}): string {
+  const params = new URLSearchParams()
+  if (filter.cropId) params.set("crop", String(filter.cropId))
+  if (filter.q) params.set("q", filter.q)
+  const query = params.toString()
+  return query ? `${ROUTES.library}?${query}` : ROUTES.library
+}
+
+/** Trang chi tiết bệnh dùng query string thay cho `[id]` (fe-coding-rules mục 3). */
+export function diseaseDetailHref(id: number): string {
+  return `${ROUTES.library}/detail?id=${id}`
+}
+
+/** Đọc id dương từ query string (`?id=`, `?crop=`). Sai định dạng thì trả null. */
+export function parsePositiveId(value: string | null): number | null {
+  if (!value || !/^\d{1,15}$/.test(value)) return null
+  const id = Number(value)
+  return id > 0 ? id : null
+}
+
+/** Mở chẩn đoán, chọn sẵn loại cây khi biết (OQ-05: chọn loại cây là bắt buộc). */
+export function diagnoseHref(cropId?: number): string {
+  return cropId ? `${ROUTES.diagnose}?cropId=${cropId}` : ROUTES.diagnose
+}
 
 export function isNavActive(item: NavItem, pathname: string): boolean {
   if (item.exact) return pathname === item.href

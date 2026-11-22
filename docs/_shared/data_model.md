@@ -162,7 +162,7 @@ CHECK `((log_type = 'CARE_NOTE' AND content IS NOT NULL AND status_after IS NULL
 | id | BIGINT | PK | |
 | user_id | BIGINT | FK → users, NOT NULL | |
 | plant_id | BIGINT | FK → plants, NULL | SET NULL khi xoá cây |
-| crop_id | BIGINT | FK → crops, NULL | Loại cây người dùng chọn ở UC02 bước 7, **tuỳ chọn** (OQ-05). NULL thì loại cây hiển thị lấy theo `crop_id` của nhãn hạng 1 |
+| crop_id | BIGINT | FK → crops, **NOT NULL** | Loại cây người dùng chọn ở UC02 bước 7, **bắt buộc** (OQ-05 đổi 22/11). Migration `InitSchema` đang để NULL; feature `diagnosis` thêm migration đổi sang NOT NULL |
 | original_image_url | VARCHAR(500) | NOT NULL | Ảnh gốc |
 | processed_image_url | VARCHAR(500) | NOT NULL | Ảnh đã chỉnh, là ảnh gửi AI |
 | status | VARCHAR(20) | NOT NULL, DEFAULT 'PROCESSING', CHECK DiagnosisStatus | |

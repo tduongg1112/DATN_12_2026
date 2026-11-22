@@ -1,4 +1,4 @@
-import type { EntityManager } from 'typeorm';
+import { IsNull, type EntityManager } from 'typeorm';
 import { Crop } from '../../modules/catalog/entities/crop.entity.js';
 import {
   Disease,
@@ -9,12 +9,14 @@ import {
   ModelLabel,
   type LabelType,
 } from '../../modules/catalog/entities/model-label.entity.js';
+import { SAMPLE_DISEASE_CONTENT } from './dev-sample-content.js';
 
 /*
  * ================================ DỮ LIỆU MẪU ================================
  * Chép từ phần 2 của `../Phân tích Class và ERD/04_Khoi_tao_CSDL_PostgreSQL.sql`.
  * CHỈ DÙNG KHI DEV. Danh sách bệnh và nhãn thật do nhóm AI cung cấp (ERD 7.2).
- * Mã nhãn theo kiểu PlantVillage, mã của lúa là giả định. Bệnh để DRAFT.
+ * Mã nhãn theo kiểu PlantVillage, mã của lúa là giả định. Bệnh tạo ở DRAFT, rồi được
+ * điền nội dung mẫu (`dev-sample-content.ts`, OQ-36) và chuyển PUBLISHED.
  * ==============================================================================
  */
 export const SAMPLE_DISEASES: ReadonlyArray<{
@@ -142,10 +144,46 @@ export const SAMPLE_LABELS: ReadonlyArray<{
   },
 ];
 
-/** Cần chạy sau base seed (cần 5 loại cây). Chạy lại không tạo trùng. */
-export async function runDevSampleSeed(
+/**
+ * Điền nội dung mẫu (OQ-36) cho bệnh mẫu **chưa có nội dung** (`summary IS NULL`), rồi
+ * công khai. Bệnh đã có nội dung (nhập tay hoặc seed lần trước) giữ nguyên, nên chạy lại
+ * không đổi gì (database_design_disease_library.md mục 4).
+ */
+async function fillSampleContent(
   manager: EntityManager,
-): Promise<{ diseasesCreated: number; labelsCreated: number }> {
+  cropId: (code: string) => number,
+): Promise<number> {
+  const diseases = manager.getRepository(Disease);
+  let filled = 0;
+  for (const [index, c] of SAMPLE_DISEASE_CONTENT.entries()) {
+    const disease = await diseases.findOneBy({
+      cropId: cropId(c.cropCode),
+      name: c.name,
+      summary: IsNull(),
+    });
+    if (!disease) continue;
+    await diseases.update(disease.id, {
+      summary: c.summary,
+      symptoms: c.symptoms,
+      causes: c.causes,
+      prevention: c.prevention,
+      treatment: c.treatment,
+      isFeatured: c.featured,
+      status: 'PUBLISHED',
+      // Lệch nhau 1 phút để thứ tự theo `published_at` (BR-03) ổn định.
+      publishedAt: disease.publishedAt ?? new Date(Date.now() - index * 60_000),
+    });
+    filled++;
+  }
+  return filled;
+}
+
+/** Cần chạy sau base seed (cần 5 loại cây). Chạy lại không tạo trùng. */
+export async function runDevSampleSeed(manager: EntityManager): Promise<{
+  diseasesCreated: number;
+  diseasesFilled: number;
+  labelsCreated: number;
+}> {
   const crops = await manager.getRepository(Crop).find();
   const cropId = (code: string) => {
     const crop = crops.find((c) => c.code === code);
@@ -191,5 +229,6 @@ export async function runDevSampleSeed(
     });
     labelsCreated++;
   }
-  return { diseasesCreated, labelsCreated };
+  const diseasesFilled = await fillSampleContent(manager, cropId);
+  return { diseasesCreated, diseasesFilled, labelsCreated };
 }

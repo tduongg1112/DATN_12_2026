@@ -109,7 +109,7 @@ Dự kiến viết bằng Python, PyTorch, chuyển sang ONNX/TFLite (Đề cư�
 
 | Mục | Nội dung |
 |---|---|
-| `POST /predict` (multipart) | `image`: ảnh đã cắt vuông · `crop_code`: mã loại cây (tuỳ chọn) · `top_k`: mặc định 3 |
+| `POST /predict` (multipart) | `image`: ảnh đã cắt vuông · `crop_code`: mã loại cây (**bắt buộc**, OQ-05 chốt 22/11) · `top_k`: mặc định 3 |
 | `200 OK` (JSON) | `model_version` · `inference_ms` · `predictions: [{ class_code, probability }]` giảm dần · `heatmap_url` (tuỳ chọn) |
 | Lỗi | `400` hoặc `422`: ảnh hỏng, sai định dạng, loại cây không hỗ trợ · `503`: AI service quá tải. Gặp lỗi thì backend đánh dấu lượt chẩn đoán `FAILED` và cho thử lại |
 | `GET /labels` | Danh sách `class_code` của phiên bản mô hình đang dùng, để đối chiếu với `model_labels` khi đổi mô hình. Dạng JSON chưa chốt với nhóm AI; `HttpAiClient` tạm nhận mảng chuỗi |
@@ -118,7 +118,7 @@ Dự kiến viết bằng Python, PyTorch, chuyển sang ONNX/TFLite (Đề cư�
 | Ngưỡng độ tin cậy | **Một ngưỡng chung**, để trong cấu hình backend. Giá trị chờ nhóm AI (OQ-06) |
 | Ánh xạ | Backend tra `class_code` trong `model_labels` (`is_active = true`). Không tìm thấy thì coi là lỗi cấu hình: `FAILED`, ghi log ERROR và gửi thông báo trong ứng dụng cho mọi ADMIN (OQ-26) |
 
-Phía backend, mọi lời gọi AI service đi qua một interface client duy nhất, chọn bản cài theo `AI_MODE` (`mock` hoặc `http`, TD-04). Khi dev và test backend thì dùng mock; khi nghiệm thu thì dùng mô hình thật cùng nhóm AI. `crop_code` chỉ gửi khi người dùng chọn loại cây (OQ-05, tạm).
+Phía backend, mọi lời gọi AI service đi qua một interface client duy nhất, chọn bản cài theo `AI_MODE` (`mock` hoặc `http`, TD-04). Khi dev và test backend thì dùng mock; khi nghiệm thu thì dùng mô hình thật cùng nhóm AI. `crop_code` luôn được gửi, vì người dùng bắt buộc chọn loại cây trước khi chẩn đoán (OQ-05, chốt 22/11). Mô hình chạy trên server (OQ-18, chốt 22/11).
 
 ## 6. Dữ liệu
 
@@ -202,6 +202,7 @@ Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. V�
 | TD-06 | Frontend 3000, backend 4000, AI service 8000 | Đã chốt | — |
 | TD-07 | Môi trường demo/staging và cách triển khai | Chưa chốt | Bước 10–11 |
 | TD-08 | Mô-đun thứ 5 `dashboard`, truy vấn tổng hợp chỉ đọc qua `DataSource` | Đã chốt | — |
+| TD-24 | Ngoại lệ thứ hai của ranh giới mô-đun: truy vấn "Đang phổ biến" đặt trong `catalog`, chỉ đọc `diagnoses`, `diagnosis_predictions` qua `DataSource` | Đã chốt 22/11 | disease_library |
 | TD-09 | Bỏ `@nestjs/observe` | Đã áp dụng 21/11 | — |
 | TD-10 | Công cụ test UI end-to-end | Hoãn tới bước 10 | — |
 | TD-11 | Mô tả màn hình đặt ở `../design/screens/` (ngoài git) | Đã chốt | Bước 6 (`/gen-docs` và các skill đã cập nhật 21/11) |

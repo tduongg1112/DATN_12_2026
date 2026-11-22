@@ -74,7 +74,7 @@
 | OQ-17 | Đã chốt: form loại cây có trường "Mã lớp khoẻ mạnh" | BR-11, BR-18 |
 | OQ-15 | Đã chốt: hệ thống gợi ý nhắc theo `recheck_days` và chu kỳ tưới, bón, nên hai form có các trường này | BR-02, BR-11 |
 | DC-02 → DC-05 | Đã chốt, xem mục 4 | BR-02, BR-06, mục 4 |
-| OQ-05 [AI] | Đã chốt tạm: một mô hình chung. Nhóm AI xác nhận lại | BR-15 → BR-19 |
+| OQ-05 [AI] | Đã chốt 22/11: người dùng bắt buộc chọn loại cây, AI service luôn nhận `crop_code`. Cách ánh xạ nhãn không đổi | BR-15 → BR-19 |
 | TD-01 | Đã chốt: AWS S3 | BR-02, BR-11 |
 | OQ-19 | **Chưa chốt**: nguồn nội dung phòng trị. Không chặn code | Dữ liệu nhập |
 

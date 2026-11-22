@@ -158,6 +158,15 @@ export class EnvironmentVariables extends DatabaseEnvironment {
   @IsIn(AI_MOCK_SCENARIOS)
   AI_MOCK_SCENARIO: AiMockScenario = 'ok';
 
+  // --- Thư viện bệnh: "Đang phổ biến" (disease_library BR-04, OQ-28, OQ-37) ---
+  @IsInt()
+  @Min(1)
+  LIBRARY_TRENDING_LIMIT: number = 3;
+
+  @IsInt()
+  @Min(1)
+  LIBRARY_TRENDING_DAYS: number = 30;
+
   // --- Lưu ảnh (TD-01: dev lưu đĩa local, S3 khi deploy) ---
   @IsIn(STORAGE_DRIVERS)
   STORAGE_DRIVER: (typeof STORAGE_DRIVERS)[number] = 'local';

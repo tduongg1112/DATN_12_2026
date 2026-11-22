@@ -36,7 +36,9 @@ paths:
   ```
   Trong mỗi mô-đun: `<x>.module.ts`, `<x>.controller.ts`, `<x>.service.ts`, `entities/`, `dto/`. Test đơn vị `*.spec.ts` đặt cạnh file được test.
 - Mô-đun này gọi mô-đun khác qua **service mà mô-đun kia export**, không inject repository của mô-đun khác. **(đề xuất)** Lý do: [ERD] mục 8 giữ ranh giới mô-đun để sau này tách service được.
-- **Ngoại lệ duy nhất:** mô-đun `dashboard` được chạy truy vấn tổng hợp **chỉ đọc** trực tiếp qua `DataSource` / QueryBuilder trên bảng của các mô-đun khác. Không ghi, không inject repository để ghi [TD-08].
+- **Ngoại lệ (chỉ hai chỗ):** được chạy truy vấn tổng hợp **chỉ đọc** trực tiếp qua `DataSource` / QueryBuilder trên bảng của mô-đun khác. Không ghi, không inject repository của mô-đun khác.
+  - Mô-đun `dashboard` [TD-08].
+  - Truy vấn "Đang phổ biến" của thư viện bệnh, đặt trong `catalog` (`disease-trends.query.ts`), đọc `diagnoses`, `diagnosis_predictions` [TD-24]. Lý do: `diagnosis` đã import `catalog`, import ngược sẽ tạo vòng phụ thuộc mô-đun.
 
 ## 3. Cấu hình
 
@@ -82,7 +84,7 @@ Các thao tác sau phải nằm trong **một transaction** [ERD 6.5, 7.4]:
 Quy tắc dùng chung cho nhiều mô-đun:
 - Danh sách lịch sử tra cứu và mọi chỉ số dashboard chỉ tính lượt `status = COMPLETED` [OQ-23].
 - Xoá mềm hoặc hoàn tác lượt chẩn đoán **không** làm đổi `plants.health_status` [OQ-24].
-- Loại cây của một lượt: `diagnoses.crop_id`; NULL thì lấy `crop_id` của nhãn hạng 1 [OQ-05].
+- Loại cây của một lượt: `diagnoses.crop_id`, luôn có (NOT NULL), vì chọn loại cây là bắt buộc [OQ-05, chốt 22/11].
 
 Toàn bộ quy tắc ở tầng ứng dụng (Bảng 6.5) được liệt kê ở `docs/_shared/data_model.md` mục 5.
 
@@ -91,7 +93,7 @@ Toàn bộ quy tắc ở tầng ứng dụng (Bảng 6.5) được liệt kê �
 - Chỉ gọi qua **một interface client duy nhất** trong mô-đun `diagnosis`, có hai bản cài chọn theo `AI_MODE` [TD-04]:
   - `http`: gọi AI service thật theo hợp đồng ở `technical_overview.md` mục 5.
   - `mock`: trả top-3 lấy từ `model_labels` đang dùng đã seed. Ép được lỗi và timeout (qua cấu hình hoặc tham số test) để kiểm thử luồng `FAILED`.
-- Gửi `crop_code` chỉ khi người dùng có chọn loại cây. Chọn loại cây là tuỳ chọn [OQ-05].
+- **Luôn** gửi `crop_code` của loại cây người dùng đã chọn. Chọn loại cây là bắt buộc; request thiếu loại cây thì từ chối, không gọi AI [OQ-05, chốt 22/11]. Mô hình chạy trên server [OQ-18].
 - Ghi lượt chẩn đoán `PROCESSING` **trước** khi gọi AI. Quá thời gian chờ hoặc lỗi thì chuyển `FAILED` và ghi `completed_at` [ERD 7.4].
 - Không resize hay chuẩn hoá ảnh ở backend. Việc đó thuộc AI service [FL].
 - Gặp `class_code` không có trong `model_labels` đang dùng: chuyển `FAILED`, ghi log mức ERROR, tạo `notifications` cho mọi ADMIN (`reminder_id = NULL`). Không tạo trùng cho cùng một `class_code` [ERD 6.5][OQ-26].

@@ -74,7 +74,7 @@ Chưa chọn PWA hay Capacitor (hoãn). Code phải **chạy được ở cả h
 - Cho cắt khung vuông, xoay, chỉnh sáng và tương phản trên app. **Không resize về 224×224 ở client**, việc đó thuộc AI service [FL DIAG-02].
 - Nén ảnh ở trình duyệt trước khi tải lên [D 06]. Gửi cả ảnh gốc lẫn ảnh đã chỉnh lên backend (multipart), cả hai đều được lưu, xem `specs_diagnosis.md`.
 - Ảnh hiển thị bằng presigned URL do API trả về, có hạn ngắn [TD-01]. Không lưu URL này lâu dài phía client; hết hạn thì gọi lại API.
-- Chọn loại cây trước khi chẩn đoán là **tuỳ chọn**, có thể bỏ qua [OQ-05].
+- Chọn loại cây trước khi chẩn đoán là **bắt buộc**: chưa chọn thì không cho gửi. Mở chẩn đoán từ hồ sơ cây hoặc trang bệnh thì chọn sẵn loại cây [OQ-05, chốt 22/11].
 - Camera chỉ được gọi qua `lib/device/`. Người dùng từ chối quyền camera thì hướng dẫn cách cấp quyền và gợi ý chuyển sang "Tải ảnh lên" [C4 UC02 ngoại lệ 4.1].
 
 ## 7. Nội dung và trạng thái
