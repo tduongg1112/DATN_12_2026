@@ -36,6 +36,8 @@ export interface DiagnosisResult {
   /** ISO 8601. */
   createdAt: string
   crop: { id: number; code: string; name: string; careGuide: string | null }
+  /** Cây đã gắn (history "Tên cây", Bảng 4.6); null khi chưa gắn. */
+  plant: { id: number; name: string } | null
   originalImageUrl: string | null
   processedImageUrl: string | null
   /** Sắp theo `rank`. */

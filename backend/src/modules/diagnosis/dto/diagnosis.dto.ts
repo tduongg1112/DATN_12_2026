@@ -62,6 +62,8 @@ export interface DiagnosisResult {
   resultType: ResultType;
   createdAt: Date;
   crop: { id: number; code: string; name: string; careGuide: string | null };
+  /** Cây đã gắn (history "Tên cây"); `null` khi chưa gắn. */
+  plant: { id: number; name: string } | null;
   originalImageUrl: string | null;
   processedImageUrl: string | null;
   /** Sắp theo `rank`; hạng 1 là kết luận (BR-19). */

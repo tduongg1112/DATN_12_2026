@@ -45,6 +45,7 @@ Xác suất được làm tròn 4 chữ số thập phân (đúng cột `DECIMAL
   "resultType": "DISEASE",
   "createdAt": "2026-11-22T09:30:00.000Z",
   "crop": { "id": 3, "code": "TOMATO", "name": "Cà chua", "careGuide": null },
+  "plant": null,
   "originalImageUrl": "http://localhost:4000/uploads/diagnoses/2026/11/….jpg",
   "processedImageUrl": "http://localhost:4000/uploads/diagnoses/2026/11/….jpg",
   "predictions": [
@@ -72,6 +73,7 @@ Xác suất được làm tròn 4 chữ số thập phân (đúng cột `DECIMAL
 |---|---|
 | `resultType` | `DISEASE` · `HEALTHY` · `UNCERTAIN` |
 | `crop.careGuide` | `crops.care_guide`, dùng khi `HEALTHY` (BR-16). Có thể `null` |
+| `plant` | `{ id, name }` của cây đã gắn, hoặc `null`. Thêm 23/11 cho "Tên cây" của `history` (Bảng 4.6). Luôn `null` cho tới khi làm `my_plants` |
 | `*ImageUrl` | Đổi từ khoá đối tượng qua `StorageService.resolveUrl` (TD-14). Bản S3 sau này là presigned URL ngắn hạn |
 | `predictions` | Sắp theo `rank`. Hạng 1 là kết luận (BR-19). Hạng 2–3 là "các khả năng khác" |
 | `labelType` | `DISEASE`: có `disease`. `HEALTHY`: `disease = null`, giao diện hiện "Cây khoẻ mạnh" |
@@ -188,4 +190,5 @@ Không trả `model_version`, `inference_ms` (chỉ dùng cho thống kê, Bản
 |---|---|---|---|
 | 22/11/2026 | 0.1 | Sinh từ specs v0.3 (build-first, như `auth`, `disease_library`) | Claude |
 | 22/11/2026 | 0.2 | Dương duyệt: chốt TD-25, TD-26, OQ-40, OQ-41. Chuyển REVIEWED | Claude theo quyết định của Dương |
+| 23/11/2026 | 0.4 | Thêm trường `plant` vào `DiagnosisResult` (feature `history`, `api_history.md` D2) | Claude |
 | 23/11/2026 | 0.3 | Code xong (build-first): làm tròn xác suất trước khi so ngưỡng, `class_code` trùng là sai hợp đồng, mục "Ghi chú cài đặt", nợ kỹ thuật N4, N5 | Claude |

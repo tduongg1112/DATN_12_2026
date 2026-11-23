@@ -12,8 +12,30 @@ const toastManager = Toast.createToastManager()
 
 const TOAST_TIMEOUT_MS = 3000
 
-export function notify(message: string): void {
-  toastManager.add({ description: message, timeout: TOAST_TIMEOUT_MS })
+export interface NotifyOptions {
+  /** Nút hành động, vd "Hoàn tác" (history BR-08). Bấm thì đóng thông báo. */
+  action?: { label: string; onClick: () => void }
+  /** Thời gian hiện (ms); mặc định 3 giây. */
+  timeout?: number
+}
+
+export function notify(message: string, options: NotifyOptions = {}): void {
+  const { action, timeout = TOAST_TIMEOUT_MS } = options
+  const id: string = toastManager.add({
+    description: message,
+    timeout,
+    // Có nút thì báo ngay cho trình đọc màn hình, để kịp bấm trong thời gian hiện.
+    priority: action ? "high" : "low",
+    actionProps: action
+      ? {
+          children: action.label,
+          onClick: () => {
+            toastManager.close(id)
+            action.onClick()
+          },
+        }
+      : undefined,
+  })
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -45,6 +67,7 @@ function ToastList() {
       <Toast.Content>
         <Toast.Description className="m-0" />
       </Toast.Content>
+      <Toast.Action className="-mr-2 ml-auto shrink-0 rounded-full px-3 py-1 text-olive outline-none type-label hover:bg-inverse-2 focus-visible:ring-3 focus-visible:ring-ring/50" />
     </Toast.Root>
   ))
 }

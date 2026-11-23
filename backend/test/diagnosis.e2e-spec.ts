@@ -384,6 +384,7 @@ describe('Diagnosis (e2e)', () => {
           name: `${P} cây T`,
           careGuide: 'Gợi ý chăm sóc T',
         },
+        plant: null,
         originalImageUrl: expect.stringMatching(imageUrl('jpg')),
         processedImageUrl: expect.stringMatching(imageUrl('png')),
         predictions: [

@@ -41,6 +41,7 @@ export const ROUTES = {
   profile: "/profile",
   library: "/library",
   diagnose: "/diagnose",
+  history: "/history",
   adminHome: "/admin",
 } as const
 
@@ -76,6 +77,32 @@ export function diagnoseHref(cropId?: number): string {
 /** Màn kết quả chẩn đoán, query string thay cho `[id]` (fe-coding-rules mục 3). */
 export function diagnosisResultHref(id: number): string {
   return `${ROUTES.diagnose}/result?id=${id}`
+}
+
+/**
+ * Lịch sử tra cứu kèm bộ lọc trên URL, để quay lại từ chi tiết vẫn giữ bộ lọc
+ * (design/screens/history.md S1): `?q=&crop=&result=&from=&to=`.
+ */
+export function historyHref(filter: {
+  q?: string
+  cropId?: number | null
+  resultType?: string | null
+  fromDate?: string | null
+  toDate?: string | null
+}): string {
+  const params = new URLSearchParams()
+  if (filter.q) params.set("q", filter.q)
+  if (filter.cropId) params.set("crop", String(filter.cropId))
+  if (filter.resultType) params.set("result", filter.resultType)
+  if (filter.fromDate) params.set("from", filter.fromDate)
+  if (filter.toDate) params.set("to", filter.toDate)
+  const query = params.toString()
+  return query ? `${ROUTES.history}?${query}` : ROUTES.history
+}
+
+/** Chi tiết một lần tra cứu (fe-coding-rules mục 3). */
+export function historyDetailHref(id: number): string {
+  return `${ROUTES.history}/detail?id=${id}`
 }
 
 export function isNavActive(item: NavItem, pathname: string): boolean {

@@ -179,11 +179,14 @@ export class DiagnosisService {
     return this.getOwn(userId, diagnosisId);
   }
 
-  /** D2 (Q5): chỉ lượt của chính mình, COMPLETED, chưa xoá mềm (BR-G03, OQ-23). */
+  /**
+   * D2 (Q5): chỉ lượt của chính mình, COMPLETED, chưa xoá mềm (BR-G03, OQ-23). Kèm cây đã
+   * gắn cho "Tên cây" (history, Bảng 4.6).
+   */
   async getOwn(userId: number, id: number): Promise<DiagnosisResult> {
     const diagnosis = await this.diagnoses.findOne({
       where: { id, userId, status: 'COMPLETED' },
-      relations: { crop: true },
+      relations: { crop: true, plant: true },
     });
     if (!diagnosis?.crop || !diagnosis.resultType) throw diagnosisNotFound();
 
@@ -207,6 +210,9 @@ export class DiagnosisService {
         name: diagnosis.crop.name,
         careGuide: diagnosis.crop.careGuide,
       },
+      plant: diagnosis.plant
+        ? { id: diagnosis.plant.id, name: diagnosis.plant.name }
+        : null,
       originalImageUrl,
       processedImageUrl,
       predictions: predictions.map((p) => {

@@ -1,19 +1,30 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
-import { Construction } from "lucide-react"
 
-import { Card } from "@/components/ds/card-stack"
-import { EmptyState } from "@/components/ds/states"
+import {
+  HistoryListSkeleton,
+  HistoryListView,
+} from "@/components/history/history-list-view"
 import { UserPageShell } from "@/components/layout/page-shells"
+import { HISTORY_TEXT } from "@/lib/history/text"
 
-export const metadata: Metadata = { title: "Lịch sử tra cứu" }
+export const metadata: Metadata = { title: HISTORY_TEXT.PAGE_TITLE }
 
-/** Trang tạm, khuôn "Danh sách". Nghiệp vụ làm ở feature history. */
+/**
+ * S1 Lịch sử tra cứu `/history` (UC03), khuôn "Danh sách" (design/screens/history.md).
+ * Bộ lọc nằm trên URL, đọc bằng `useSearchParams` nên bọc `<Suspense>`. Khung trang do
+ * `HistoryListView` dựng để đặt nút "Chọn" lên thanh đầu trang.
+ */
 export default function Page() {
   return (
-    <UserPageShell layout="list" title="Lịch sử tra cứu">
-      <Card notch>
-        <EmptyState icon={Construction} message="Trang đang được xây dựng." />
-      </Card>
-    </UserPageShell>
+    <Suspense
+      fallback={
+        <UserPageShell layout="list" title={HISTORY_TEXT.PAGE_TITLE}>
+          <HistoryListSkeleton />
+        </UserPageShell>
+      }
+    >
+      <HistoryListView />
+    </Suspense>
   )
 }

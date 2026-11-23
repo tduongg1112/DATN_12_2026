@@ -1,10 +1,8 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 
-import {
-  DiagnosisResultSkeleton,
-  DiagnosisResultView,
-} from "@/components/diagnosis/diagnosis-result-view"
+import { DiagnosisResultView } from "@/components/diagnosis/diagnosis-result-view"
+import { ResultSkeleton } from "@/components/diagnosis/result-cards"
 import { UserPageShell } from "@/components/layout/page-shells"
 import { DIAGNOSIS_TEXT } from "@/lib/diagnosis/text"
 import { ROUTES } from "@/lib/navigation"
@@ -24,7 +22,7 @@ export default function Page() {
       backHref={ROUTES.diagnose}
       backBehavior="history"
     >
-      <Suspense fallback={<DiagnosisResultSkeleton />}>
+      <Suspense fallback={<ResultSkeleton />}>
         <DiagnosisResultView />
       </Suspense>
     </UserPageShell>
