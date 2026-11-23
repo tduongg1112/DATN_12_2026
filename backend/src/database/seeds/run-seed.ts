@@ -21,7 +21,7 @@ class SeedEnvironment extends DatabaseEnvironment {
 /**
  * `npm run seed`      : 1 ADMIN + 5 loại cây.
  * `npm run seed:dev`  : như trên + DỮ LIỆU MẪU (6 bệnh, 11 nhãn) từ SQL 04, kèm nội dung
- *                       bệnh mẫu Claude soạn (OQ-36), chỉ cho dev.
+ *                       bệnh mẫu (OQ-36) và gợi ý chăm sóc mẫu (OQ-41) Claude soạn, chỉ cho dev.
  */
 async function main() {
   const withDevSample = process.argv.includes('--dev');
@@ -40,7 +40,7 @@ async function main() {
       if (withDevSample) {
         const dev = await runDevSampleSeed(manager);
         console.log(
-          `[seed:dev] DỮ LIỆU MẪU (chỉ dùng khi dev): bệnh mới ${dev.diseasesCreated}, bệnh được điền nội dung mẫu và công khai ${dev.diseasesFilled}, nhãn mới ${dev.labelsCreated}`,
+          `[seed:dev] DỮ LIỆU MẪU (chỉ dùng khi dev): bệnh mới ${dev.diseasesCreated}, bệnh được điền nội dung mẫu và công khai ${dev.diseasesFilled}, nhãn mới ${dev.labelsCreated}, loại cây được điền gợi ý chăm sóc mẫu ${dev.careGuidesFilled}`,
         );
       }
     });

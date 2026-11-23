@@ -198,3 +198,65 @@ export const SAMPLE_DISEASE_CONTENT: ReadonlyArray<SampleDiseaseContent> = [
     ),
   },
 ];
+
+/*
+ * ========================= GỢI Ý CHĂM SÓC MẪU (OQ-41) =========================
+ * Claude soạn, Dương chốt 22/11 (mở rộng OQ-36). CHỈ DÙNG KHI DEV. Hiện ở kết quả
+ * "Cây khoẻ mạnh" (diagnosis BR-16). Nội dung thật nhập qua feature `catalog`.
+ * ============================================================================
+ */
+export const SAMPLE_CROP_CARE_GUIDES: ReadonlyArray<{
+  cropCode: string;
+  careGuide: string;
+}> = [
+  {
+    cropCode: 'RICE',
+    careGuide: lines(
+      'Giữ mực nước ruộng ổn định, không để ruộng khô nứt trong giai đoạn làm đòng và trỗ.',
+      'Bón phân cân đối theo từng giai đoạn, không bón thừa đạm; bổ sung kali để cây cứng, ít đổ ngã.',
+      'Cấy hoặc sạ với mật độ vừa phải để ruộng thông thoáng.',
+      'Thăm đồng mỗi tuần, chú ý mặt lá, bẹ lá và gốc lúa để phát hiện sớm sâu bệnh.',
+      'Làm sạch cỏ dại và bờ ruộng; xử lý rơm rạ sau thu hoạch.',
+    ),
+  },
+  {
+    cropCode: 'CORN',
+    careGuide: lines(
+      'Tưới đủ ẩm, nhất là giai đoạn trổ cờ, phun râu và vào chắc hạt; tránh để ruộng úng nước.',
+      'Bón lót đầy đủ, bón thúc khi cây 3–5 lá và 7–9 lá; vun gốc sau mỗi lần bón.',
+      'Làm cỏ sạch, giữ ruộng thông thoáng.',
+      'Kiểm tra mặt dưới lá và nõn ngô mỗi tuần để phát hiện sớm sâu, bệnh.',
+      'Luân canh với cây trồng khác họ để giảm nguồn bệnh trong đất.',
+    ),
+  },
+  {
+    cropCode: 'TOMATO',
+    careGuide: lines(
+      'Tưới vào gốc vào buổi sáng, giữ đất đủ ẩm đều; tránh tưới lên lá vào chiều tối.',
+      'Làm giàn sớm, tỉa nhánh phụ và lá già ở gốc để cây thông thoáng.',
+      'Bón phân cân đối, tăng kali và canxi khi cây ra hoa, đậu quả.',
+      'Phủ gốc bằng rơm hoặc màng phủ để hạn chế đất bắn lên lá.',
+      'Kiểm tra lá, thân và quả hai lần mỗi tuần, nhất là khi trời ẩm, có sương.',
+    ),
+  },
+  {
+    cropCode: 'CHILI',
+    careGuide: lines(
+      'Lên luống cao, thoát nước tốt; ớt không chịu được úng.',
+      'Tưới đều, giữ ẩm vừa phải; tránh để đất lúc quá khô lúc quá ướt làm cây rụng hoa, rụng quả.',
+      'Bón phân cân đối, bón thúc định kỳ sau mỗi đợt thu hái.',
+      'Tỉa bỏ lá già, cành sát gốc để gốc thông thoáng.',
+      'Kiểm tra mặt dưới lá và đọt non mỗi tuần để phát hiện sớm sâu, bệnh.',
+    ),
+  },
+  {
+    cropCode: 'POTATO',
+    careGuide: lines(
+      'Dùng củ giống sạch bệnh, đã nảy mầm đều.',
+      'Vun luống cao, vun gốc 2–3 lần để củ không lộ ra ánh sáng và ruộng thoát nước tốt.',
+      'Tưới rãnh giữ ẩm đều, không để nước ngập luống; ngừng tưới trước khi thu hoạch khoảng 10 ngày.',
+      'Bón phân cân đối, đủ kali để củ chắc.',
+      'Không trồng gần ruộng cà chua; kiểm tra lá thường xuyên khi trời âm u, có sương.',
+    ),
+  },
+];

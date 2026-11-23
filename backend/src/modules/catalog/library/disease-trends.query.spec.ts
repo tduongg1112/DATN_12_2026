@@ -37,15 +37,4 @@ describe('DiseaseTrendsQuery (BR-04, OQ-28, OQ-37, TD-24)', () => {
     // Lượt đã xoá mềm vẫn được đếm (history BR-09).
     expect(sql).not.toContain('deleted_at');
   });
-
-  it('ngưỡng để trống thì chỉ xét result_type, không lọc xác suất', async () => {
-    const { trends, query } = setup({
-      LIBRARY_TRENDING_DAYS: 30,
-      LIBRARY_TRENDING_LIMIT: 3,
-    });
-    await trends.trendingDiseaseIds(now);
-    const [sql, params] = query.mock.calls[0] as [string, unknown[]];
-    expect(params).toEqual([now, 30, 3]);
-    expect(sql).not.toContain('probability');
-  });
 });

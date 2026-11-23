@@ -4,19 +4,28 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import type { EnvironmentVariables } from '../../config/env.validation.js';
 import { CatalogModule } from '../catalog/catalog.module.js';
 import { ModelLabelService } from '../catalog/model-label.service.js';
+import { PlantsModule } from '../plants/plants.module.js';
 import { AiClient } from './ai/ai-client.js';
 import { HttpAiClient } from './ai/http-ai-client.js';
 import { MockAiClient } from './ai/mock-ai-client.js';
+import { DiagnosisController } from './diagnosis.controller.js';
+import { DiagnosisService } from './diagnosis.service.js';
 import { DiagnosisPrediction } from './entities/diagnosis-prediction.entity.js';
 import { Diagnosis } from './entities/diagnosis.entity.js';
 
-/** Mô-đun Chẩn đoán. Nghiệp vụ làm ở feature `diagnosis`; mọi lời gọi AI qua AiClient. */
+/**
+ * Mô-đun Chẩn đoán (feature `diagnosis`). Mọi lời gọi AI qua AiClient.
+ * TD-25: `diagnosis` → `catalog`, `plants`; không mô-đun nào import ngược `diagnosis`.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Diagnosis, DiagnosisPrediction]),
     CatalogModule,
+    PlantsModule,
   ],
+  controllers: [DiagnosisController],
   providers: [
+    DiagnosisService,
     {
       provide: AiClient,
       inject: [ConfigService, ModelLabelService],

@@ -73,6 +73,11 @@ export function diagnoseHref(cropId?: number): string {
   return cropId ? `${ROUTES.diagnose}?cropId=${cropId}` : ROUTES.diagnose
 }
 
+/** Màn kết quả chẩn đoán, query string thay cho `[id]` (fe-coding-rules mục 3). */
+export function diagnosisResultHref(id: number): string {
+  return `${ROUTES.diagnose}/result?id=${id}`
+}
+
 export function isNavActive(item: NavItem, pathname: string): boolean {
   if (item.exact) return pathname === item.href
   return pathname === item.href || pathname.startsWith(`${item.href}/`)

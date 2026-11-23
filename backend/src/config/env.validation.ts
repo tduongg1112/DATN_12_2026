@@ -148,12 +148,14 @@ export class EnvironmentVariables extends DatabaseEnvironment {
   @Min(1)
   AI_TOP_K: number = 3;
 
-  /** OQ-06: một ngưỡng chung. Giá trị chờ nhóm AI nên được phép để trống. */
-  @IsOptional()
+  /**
+   * OQ-06: một ngưỡng chung. 0.6 là giá trị TẠM khi dev, chờ nhóm AI chốt (TD-26:
+   * có mặc định để luôn tính được dạng kết quả UNCERTAIN).
+   */
   @IsNumber()
   @Min(0)
   @Max(1)
-  AI_CONFIDENCE_THRESHOLD?: number;
+  AI_CONFIDENCE_THRESHOLD: number = 0.6;
 
   @IsIn(AI_MOCK_SCENARIOS)
   AI_MOCK_SCENARIO: AiMockScenario = 'ok';

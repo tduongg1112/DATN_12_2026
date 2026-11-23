@@ -5,8 +5,8 @@ export interface AiPredictInput {
   /** Ảnh đã cắt vuông (ảnh đã chỉnh). AI service tự resize, chuẩn hoá. */
   image: Buffer;
   contentType: ImageContentType;
-  /** Mã loại cây, chỉ gửi khi người dùng có chọn (OQ-05). */
-  cropCode?: string;
+  /** Mã loại cây người dùng chọn. Luôn gửi, vì chọn loại cây là bắt buộc (OQ-05, chốt 22/11). */
+  cropCode: string;
   /** Mặc định AI_TOP_K (3). */
   topK?: number;
 }

@@ -9,7 +9,10 @@ import {
   ModelLabel,
   type LabelType,
 } from '../../modules/catalog/entities/model-label.entity.js';
-import { SAMPLE_DISEASE_CONTENT } from './dev-sample-content.js';
+import {
+  SAMPLE_CROP_CARE_GUIDES,
+  SAMPLE_DISEASE_CONTENT,
+} from './dev-sample-content.js';
 
 /*
  * ================================ DỮ LIỆU MẪU ================================
@@ -178,11 +181,29 @@ async function fillSampleContent(
   return filled;
 }
 
+/**
+ * Điền gợi ý chăm sóc mẫu (OQ-41) cho loại cây **chưa có** (`care_guide IS NULL`).
+ * Loại cây đã có gợi ý giữ nguyên (database_design_diagnosis.md mục 4).
+ */
+async function fillSampleCareGuides(manager: EntityManager): Promise<number> {
+  const crops = manager.getRepository(Crop);
+  let filled = 0;
+  for (const c of SAMPLE_CROP_CARE_GUIDES) {
+    const result = await crops.update(
+      { code: c.cropCode, careGuide: IsNull() },
+      { careGuide: c.careGuide },
+    );
+    filled += result.affected ?? 0;
+  }
+  return filled;
+}
+
 /** Cần chạy sau base seed (cần 5 loại cây). Chạy lại không tạo trùng. */
 export async function runDevSampleSeed(manager: EntityManager): Promise<{
   diseasesCreated: number;
   diseasesFilled: number;
   labelsCreated: number;
+  careGuidesFilled: number;
 }> {
   const crops = await manager.getRepository(Crop).find();
   const cropId = (code: string) => {
@@ -230,5 +251,6 @@ export async function runDevSampleSeed(manager: EntityManager): Promise<{
     labelsCreated++;
   }
   const diseasesFilled = await fillSampleContent(manager, cropId);
-  return { diseasesCreated, diseasesFilled, labelsCreated };
+  const careGuidesFilled = await fillSampleCareGuides(manager);
+  return { diseasesCreated, diseasesFilled, labelsCreated, careGuidesFilled };
 }

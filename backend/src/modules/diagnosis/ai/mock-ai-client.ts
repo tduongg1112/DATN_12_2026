@@ -20,7 +20,7 @@ export interface MockAiClientOptions {
 
 /**
  * AI giả khi chưa có AI service (TD-04, AI_MODE=mock). Trả top-k lấy từ model_labels
- * đang dùng; cùng một ảnh luôn ra cùng kết quả. Kịch bản lỗi chọn bằng AI_MOCK_SCENARIO
+ * đang dùng của loại cây đã chọn (OQ-05); cùng một ảnh luôn ra cùng kết quả. Kịch bản lỗi chọn bằng AI_MOCK_SCENARIO
  * hoặc tham số `scenario` (dùng trong test):
  * - `error`: như AI trả 503 · `timeout`: chờ hết AI_TIMEOUT_MS rồi báo quá thời gian
  * - `invalid_image`: như AI trả 422 · `unknown_label`: hạng 1 là class_code không có trong danh mục (OQ-26)
@@ -65,9 +65,7 @@ export class MockAiClient extends AiClient {
         'Mock: chưa có model_labels đang dùng. Chạy "npm run seed:dev".',
       );
     }
-    const pool = input.cropCode
-      ? all.filter((l) => l.cropCode === input.cropCode)
-      : all;
+    const pool = all.filter((l) => l.cropCode === input.cropCode);
     if (pool.length === 0) {
       throw new AiServiceError(
         'bad_request',

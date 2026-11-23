@@ -11,7 +11,11 @@ const LABELS: ActiveLabel[] = [
   { classCode: 'Rice___healthy', cropCode: 'RICE' },
 ];
 const image = Buffer.from([0xff, 0xd8, 0xff, 1, 2, 3]);
-const input = { image, contentType: 'image/jpeg' as const };
+const input = {
+  image,
+  contentType: 'image/jpeg' as const,
+  cropCode: 'TOMATO',
+};
 
 const client = (labels = LABELS, timeoutMs = 30) =>
   new MockAiClient(async () => labels, {
@@ -50,7 +54,7 @@ describe('MockAiClient (TD-04)', () => {
     expect(await c.predict(input)).toEqual(await c.predict(input));
   });
 
-  it('có cropCode thì chỉ trả nhãn của loại cây đó', async () => {
+  it('chỉ trả nhãn của loại cây đã chọn (OQ-05)', async () => {
     const r = await client().predict({ ...input, cropCode: 'POTATO', topK: 5 });
     expect(r.predictions).toHaveLength(2);
     r.predictions.forEach((p) =>

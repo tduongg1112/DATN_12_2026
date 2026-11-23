@@ -16,7 +16,7 @@ import type { EnvironmentVariables } from '../../../config/env.validation.js';
 export class DiseaseTrendsQuery {
   private readonly limit: number;
   private readonly days: number;
-  private readonly threshold: number | undefined;
+  private readonly threshold: number;
 
   constructor(
     private readonly dataSource: DataSource,
@@ -29,18 +29,12 @@ export class DiseaseTrendsQuery {
 
   /**
    * Id các bệnh "Đang phổ biến", nhiều lượt nhất trước.
-   * - Chỉ lượt `COMPLETED` + `DISEASE`, dự đoán hạng 1 có xác suất ≥ ngưỡng. Ngưỡng để
-   *   trống thì chỉ xét `result_type`, vì dạng kết quả đã tính theo ngưỡng lúc chẩn đoán.
+   * - Chỉ lượt `COMPLETED` + `DISEASE`, dự đoán hạng 1 có xác suất ≥ ngưỡng (ngưỡng luôn
+   *   có giá trị, mặc định tạm 0.6: TD-26).
    * - Gồm cả lượt đã xoá mềm: lượt đã xoá vẫn tính trong thống kê (history BR-09).
    * - Chỉ bệnh đang hiển thị được (công khai, loại cây không bị ẩn), có ≥ 1 lượt.
    */
   async trendingDiseaseIds(now: Date = new Date()): Promise<number[]> {
-    const params: unknown[] = [now, this.days, this.limit];
-    let thresholdFilter = '';
-    if (this.threshold !== undefined) {
-      params.push(this.threshold);
-      thresholdFilter = 'AND p.probability >= $4';
-    }
     const rows = await this.dataSource.query<{ disease_id: number | string }[]>(
       `SELECT ml.disease_id
          FROM diagnoses dg
@@ -52,11 +46,11 @@ export class DiseaseTrendsQuery {
           AND dg.result_type = 'DISEASE'
           AND dg.created_at >= $1::timestamptz - make_interval(days => $2::int)
           AND dg.created_at <= $1::timestamptz
-          ${thresholdFilter}
+          AND p.probability >= $4
         GROUP BY ml.disease_id
         ORDER BY COUNT(*) DESC, ml.disease_id
         LIMIT $3`,
-      params,
+      [now, this.days, this.limit, this.threshold],
     );
     return rows.map((r) => Number(r.disease_id));
   }

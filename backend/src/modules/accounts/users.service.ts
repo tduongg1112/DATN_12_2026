@@ -86,6 +86,16 @@ export class UsersService {
     });
   }
 
+  /** Id mọi tài khoản ADMIN, để mô-đun khác gửi thông báo (diagnosis BR-11, TD-25). */
+  async findAdminIds(): Promise<number[]> {
+    const admins = await this.users.find({
+      select: { id: true },
+      where: { role: 'ADMIN' },
+      order: { id: 'ASC' },
+    });
+    return admins.map((u) => u.id);
+  }
+
   private async requireUser(userId: number): Promise<User> {
     const user = await this.users.findOneBy({ id: userId });
     if (!user) {

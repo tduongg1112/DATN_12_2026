@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CropService } from './crop.service.js';
 import { Crop } from './entities/crop.entity.js';
 import { DiseaseImage } from './entities/disease-image.entity.js';
 import { Disease } from './entities/disease.entity.js';
@@ -18,7 +19,12 @@ import { ModelLabelService } from './model-label.service.js';
     TypeOrmModule.forFeature([Crop, Disease, DiseaseImage, ModelLabel]),
   ],
   controllers: [LibraryController],
-  providers: [ModelLabelService, LibraryService, DiseaseTrendsQuery],
-  exports: [ModelLabelService],
+  providers: [
+    ModelLabelService,
+    CropService,
+    LibraryService,
+    DiseaseTrendsQuery,
+  ],
+  exports: [ModelLabelService, CropService],
 })
 export class CatalogModule {}

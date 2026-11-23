@@ -85,7 +85,7 @@ Thứ tự gợi ý ban đầu (cột #) dựa trên phụ thuộc dữ liệu: 
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | Cần `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` khi chạy thử Google thật | VERIFIED (build-first) | REVIEWED (build-first) · [api](auth/api_auth.md), [db](auth/database_design_auth.md), `../design/screens/auth.md` | DONE (build-first) | — |
 | 2 | [`catalog`](catalog/specs_catalog.md) | UC06 | ADM-01, 02, 07 (2/0/1) | auth | — | VERIFIED (build-first) | — | — | — |
-| 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | Giá trị ngưỡng OQ-06 (chờ nhóm AI) | VERIFIED (build-first) | — | — | — |
+| 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](diagnosis/api_diagnosis.md), [db](diagnosis/database_design_diagnosis.md), `../design/screens/diagnosis.md` | DONE (build-first) | — |
 | 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | — | — | — |
 | 5 | [`my_plants`](my_plants/specs_my_plants.md) | UC04 | PLANT-01..06 (4/1/1), NOTI-01..04 (0/3/1) | diagnosis | — | VERIFIED (build-first) | — | — | — |
 | 6 | [`disease_library`](disease_library/specs_disease_library.md) | UC05 | LIB-01..04 (1/1/2) | catalog | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](disease_library/api_disease_library.md), [db](disease_library/database_design_disease_library.md), `../design/screens/disease_library.md` | DONE (build-first) | — |

@@ -33,9 +33,12 @@ describe('validateEnv', () => {
     expect(env).toMatchObject({ PORT: 4100, REDIS_PORT: 6380, AI_TOP_K: 5 });
   });
 
-  it('cho phép để trống ngưỡng độ tin cậy (OQ-06)', () => {
-    const env = validateEnv({ ...base, AI_CONFIDENCE_THRESHOLD: '' });
-    expect(env.AI_CONFIDENCE_THRESHOLD).toBeUndefined();
+  it('ngưỡng độ tin cậy để trống thì lấy mặc định tạm 0.6 (OQ-06, TD-26)', () => {
+    expect(
+      validateEnv({ ...base, AI_CONFIDENCE_THRESHOLD: '' })
+        .AI_CONFIDENCE_THRESHOLD,
+    ).toBe(0.6);
+    expect(validateEnv(base).AI_CONFIDENCE_THRESHOLD).toBe(0.6);
   });
 
   it('nhận ngưỡng trong [0,1] và từ chối giá trị ngoài khoảng', () => {
