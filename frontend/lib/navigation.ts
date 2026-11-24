@@ -45,7 +45,30 @@ export const ROUTES = {
   plants: "/plants",
   notifications: "/notifications",
   adminHome: "/admin",
+  /** S1 Danh mục bệnh (design/screens/catalog.md). */
+  catalog: "/admin/catalog",
+  catalogCrops: "/admin/catalog/crops",
+  catalogLabels: "/admin/catalog/labels",
 } as const
+
+/** S2 Thêm bệnh; `classCode` chọn sẵn mã lớp khi đi từ S6 "Nhãn mô hình". */
+export function diseaseNewHref(classCode?: string): string {
+  const base = `${ROUTES.catalog}/diseases/new`
+  return classCode ? `${base}?classCode=${encodeURIComponent(classCode)}` : base
+}
+
+/** S2 Sửa bệnh (query string thay cho `[id]`, fe-coding-rules mục 3). */
+export function diseaseEditHref(id: number): string {
+  return `${ROUTES.catalog}/diseases/edit?id=${id}`
+}
+
+export function cropNewHref(): string {
+  return `${ROUTES.catalogCrops}/new`
+}
+
+export function cropEditHref(id: number): string {
+  return `${ROUTES.catalogCrops}/edit?id=${id}`
+}
 
 /** "Xem tất cả" kèm bộ lọc trên URL, để quay lại vẫn giữ bộ lọc (design/screens/disease_library.md S2). */
 export function libraryHref(filter: {

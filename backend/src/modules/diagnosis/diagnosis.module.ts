@@ -12,6 +12,8 @@ import { DiagnosisController } from './diagnosis.controller.js';
 import { DiagnosisService } from './diagnosis.service.js';
 import { HistoryController } from './history/history.controller.js';
 import { HistoryService } from './history/history.service.js';
+import { ModelLabelsController } from './labels/model-labels.controller.js';
+import { ModelLabelsAdminService } from './labels/model-labels.service.js';
 import { PlantLinkController } from './plant-link/plant-link.controller.js';
 import { PlantLinkService } from './plant-link/plant-link.service.js';
 import { DiagnosisPrediction } from './entities/diagnosis-prediction.entity.js';
@@ -19,7 +21,8 @@ import { Diagnosis } from './entities/diagnosis.entity.js';
 
 /**
  * Mô-đun Chẩn đoán (feature `diagnosis`) và lịch sử tra cứu (feature `history`, thư mục
- * `history/`). Mọi lời gọi AI qua AiClient.
+ * `history/`). Mọi lời gọi AI qua AiClient, kể cả nhãn mô hình của khu quản trị (`labels/`,
+ * feature `catalog` M1, M2; TD-31 A).
  * TD-25: `diagnosis` → `catalog`, `plants`; không mô-đun nào import ngược `diagnosis`.
  */
 @Module({
@@ -28,11 +31,17 @@ import { Diagnosis } from './entities/diagnosis.entity.js';
     CatalogModule,
     PlantsModule,
   ],
-  controllers: [DiagnosisController, HistoryController, PlantLinkController],
+  controllers: [
+    DiagnosisController,
+    HistoryController,
+    PlantLinkController,
+    ModelLabelsController,
+  ],
   providers: [
     DiagnosisService,
     HistoryService,
     PlantLinkService,
+    ModelLabelsAdminService,
     {
       provide: AiClient,
       inject: [ConfigService, ModelLabelService],

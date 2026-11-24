@@ -6,7 +6,11 @@ import { DEFAULT_ERRORS } from '../../../common/exceptions/default-errors.js';
 import { StorageService } from '../../../common/storage/storage.service.js';
 import { Crop } from '../entities/crop.entity.js';
 import { DiseaseImage } from '../entities/disease-image.entity.js';
-import { Disease, type Severity } from '../entities/disease.entity.js';
+import {
+  Disease,
+  type PathogenGroup,
+  type Severity,
+} from '../entities/disease.entity.js';
 import { DiseaseTrendsQuery } from './disease-trends.query.js';
 import type {
   CropSummary,
@@ -119,7 +123,11 @@ export class LibraryService {
         where: { diseaseId: id },
         order: { sortOrder: 'ASC', id: 'ASC' },
       }),
-      this.relatedCards(disease),
+      this.relatedFor({
+        cropId: disease.cropId,
+        pathogenGroup: disease.pathogenGroup,
+        excludeId: disease.id,
+      }),
     ]);
 
     return {
@@ -148,14 +156,21 @@ export class LibraryService {
     };
   }
 
-  /** BR-07: cùng loại cây hoặc cùng nhóm tác nhân; cùng loại cây xếp trước. */
-  private async relatedCards(disease: Disease): Promise<DiseaseCard[]> {
+  /**
+   * BR-07: cùng loại cây hoặc cùng nhóm tác nhân; cùng loại cây xếp trước. Dùng cho L3 và
+   * trang xem trước của quản trị (catalog B7, OQ-58), nên nhận tiêu chí thay cho bệnh.
+   */
+  async relatedFor(criteria: {
+    cropId: number;
+    pathogenGroup: PathogenGroup;
+    excludeId?: number;
+  }): Promise<DiseaseCard[]> {
     const trending = await this.trends.trendingDiseaseIds();
     const rows = await this.selectCards(this.visibleDiseases(), trending)
-      .andWhere('d.id <> :selfId', { selfId: disease.id })
+      .andWhere('d.id <> :selfId', { selfId: criteria.excludeId ?? 0 })
       .andWhere('(d.cropId = :sameCropId OR d.pathogenGroup = :sameGroup)', {
-        sameCropId: disease.cropId,
-        sameGroup: disease.pathogenGroup,
+        sameCropId: criteria.cropId,
+        sameGroup: criteria.pathogenGroup,
       })
       .addSelect('d.cropId = :sameCropId', 'sameCrop')
       .orderBy('sameCrop', 'DESC')

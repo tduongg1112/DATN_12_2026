@@ -55,7 +55,18 @@ export function DiseaseDetailView() {
   return <DiseaseDetailContent key={data.id} disease={data} />
 }
 
-function DiseaseDetailContent({ disease }: { disease: DiseaseDetail }) {
+/**
+ * Phần hiển thị của trang chi tiết bệnh. Dùng chung cho trang của người dùng và trang xem
+ * trước của quản trị (catalog BR-07, OQ-58), nên xem trước đúng như người dùng sẽ thấy.
+ * `preview`: nút và liên kết không bấm được, nút chính không dính đáy.
+ */
+export function DiseaseDetailContent({
+  disease,
+  preview = false,
+}: {
+  disease: DiseaseDetail
+  preview?: boolean
+}) {
   // Mục có giá trị null thì ẩn (design/screens/disease_library.md S3).
   const sections: { title: string; text: string | null }[] = [
     { title: DETAIL_SECTIONS.SYMPTOMS, text: disease.symptoms },
@@ -68,7 +79,12 @@ function DiseaseDetailContent({ disease }: { disease: DiseaseDetail }) {
 
   return (
     // Mobile: chừa chỗ cho nút "Chẩn đoán cây của bạn" dính đáy.
-    <div className="grid gap-2 pb-[calc(var(--ctl-md)+var(--s-3))] lg:grid-cols-12 lg:items-start lg:gap-5 lg:pb-0">
+    <div
+      className={cn(
+        "grid gap-2 lg:grid-cols-12 lg:items-start lg:gap-5 lg:pb-0",
+        !preview && "pb-[calc(var(--ctl-md)+var(--s-3))]"
+      )}
+    >
       <div className="grid min-w-0 gap-2 lg:col-span-8 lg:gap-5">
         <Gallery disease={disease} />
         <CardStack background="detail">
@@ -93,7 +109,11 @@ function DiseaseDetailContent({ disease }: { disease: DiseaseDetail }) {
             </Card>
           ))}
           {hasRelated && (
-            <RelatedCard items={disease.related} className="lg:hidden" />
+            <RelatedCard
+              items={disease.related}
+              inert={preview}
+              className="lg:hidden"
+            />
           )}
         </CardStack>
         <p className="m-0 px-2 text-ink-secondary type-caption">
@@ -106,7 +126,15 @@ function DiseaseDetailContent({ disease }: { disease: DiseaseDetail }) {
           <InfoRows disease={disease} />
         </Card>
         {/* BR-09. Mobile: dính đáy ngay trên dock, không bị dock che (design/06). */}
-        <div className="fixed inset-x-[var(--gutter-mobile)] bottom-[calc(84px+env(safe-area-inset-bottom,0px))] z-10 lg:static">
+        <div
+          inert={preview}
+          className={cn(
+            "lg:static",
+            preview
+              ? "static"
+              : "fixed inset-x-[var(--gutter-mobile)] bottom-[calc(84px+env(safe-area-inset-bottom,0px))] z-10"
+          )}
+        >
           <Button
             className="w-full"
             nativeButton={false}
@@ -116,7 +144,11 @@ function DiseaseDetailContent({ disease }: { disease: DiseaseDetail }) {
           </Button>
         </div>
         {hasRelated && (
-          <RelatedCard items={disease.related} className="hidden lg:block" />
+          <RelatedCard
+            items={disease.related}
+            inert={preview}
+            className="hidden lg:block"
+          />
         )}
       </aside>
     </div>
@@ -205,13 +237,15 @@ function InfoRows({
 /** "Các bệnh liên quan" (BR-07). */
 function RelatedCard({
   items,
+  inert,
   className,
 }: {
   items: DiseaseCardData[]
+  inert?: boolean
   className?: string
 }) {
   return (
-    <Card className={className}>
+    <Card className={className} inert={inert}>
       <h3 className="m-0 mb-4 type-h3">{DETAIL_SECTIONS.RELATED}</h3>
       <ul className="m-0 grid list-none p-0">
         {items.map((item) => (

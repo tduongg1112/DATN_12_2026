@@ -1,6 +1,10 @@
 import type { ActiveLabel } from '../../catalog/model-label.service.js';
 import { AiServiceError } from './ai-client.js';
-import { MOCK_UNKNOWN_CLASS_CODE, MockAiClient } from './mock-ai-client.js';
+import {
+  MOCK_MODEL_LABELS,
+  MOCK_UNKNOWN_CLASS_CODE,
+  MockAiClient,
+} from './mock-ai-client.js';
 
 const LABELS: ActiveLabel[] = [
   { classCode: 'Tomato___healthy', cropCode: 'TOMATO' },
@@ -105,7 +109,10 @@ describe('MockAiClient (TD-04)', () => {
     expect((await errorOf(c.predict(input))).kind).toBe('unavailable');
   });
 
-  it('getLabels trả class_code của các nhãn đang dùng', async () => {
-    expect(await client().getLabels()).toEqual(LABELS.map((l) => l.classCode));
+  it('getLabels trả danh sách cố định của mô hình giả, gồm cả mã chưa gán (TD-31 A)', async () => {
+    const codes = await client().getLabels();
+    expect(codes).toEqual([...MOCK_MODEL_LABELS]);
+    expect(codes).toContain('Tomato___Leaf_Mold');
+    expect(new Set(codes).size).toBe(codes.length);
   });
 });

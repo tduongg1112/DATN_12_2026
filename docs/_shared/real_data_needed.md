@@ -10,7 +10,7 @@ Người cung cấp: **AI** = nhóm AI (Phan Lê Huy, Nguyễn Chí Hiếu) · *
 
 | # | Dữ liệu | Hiện đang dùng (tạm) | Nơi trong hệ thống | Người cung cấp | Giá trị thật | Trạng thái |
 |---|---|---|---|---|---|---|
-| A1 | **Danh sách nhãn của mô hình**: mỗi lớp gồm `class_code`, loại cây, là lớp khoẻ hay lớp bệnh, bệnh tương ứng | 11 nhãn mẫu kiểu PlantVillage (2–3 nhãn mỗi loại cây); **mã của lúa là giả định** | Bảng `model_labels`; seed `backend/src/database/seeds/dev-sample-seed.ts` (`SAMPLE_LABELS`). Mỗi loại cây phải có **đúng một** nhãn khoẻ | AI | | Chưa có |
+| A1 | **Danh sách nhãn của mô hình**: mỗi lớp gồm `class_code`, loại cây, là lớp khoẻ hay lớp bệnh, bệnh tương ứng | 11 nhãn mẫu kiểu PlantVillage (2–3 nhãn mỗi loại cây); **mã của lúa là giả định** | Bảng `model_labels`; seed `backend/src/database/seeds/dev-sample-seed.ts` (`SAMPLE_LABELS`). Mỗi loại cây phải có **đúng một** nhãn khoẻ. AI giả trả danh sách "mô hình" cố định gồm 11 mã này và 3 mã chưa gán để thử màn "Nhãn mô hình" (`MOCK_MODEL_LABELS` trong `backend/src/modules/diagnosis/ai/mock-ai-client.ts`, TD-31) | AI | | Chưa có |
 | A2 | **Ngưỡng độ tin cậy**: dưới ngưỡng thì kết quả "Chưa xác định"; cũng dùng cho "Đang phổ biến" | `0.6` | `AI_CONFIDENCE_THRESHOLD` trong `backend/.env` (OQ-06, TD-26) | AI | | Chưa có |
 | A3 | Số dự đoán trả về (`top_k`) và thời gian chờ tối đa | `3`; `15000` ms (C4 UC02 10.1 ghi "define sau") | `AI_TOP_K`, `AI_TIMEOUT_MS` | AI | | Chưa có |
 | A4 | **Mã loại cây gửi cho mô hình** (`crop_code`) | `RICE`, `CORN`, `TOMATO`, `CHILI`, `POTATO` | Cột `crops.code`; seed `base-seed.ts` | AI | | Chưa có |
@@ -22,7 +22,7 @@ Người cung cấp: **AI** = nhóm AI (Phan Lê Huy, Nguyễn Chí Hiếu) · *
 
 ## 2. Danh mục bệnh và loại cây (cả nhóm)
 
-Lần build này nhập bằng seed. Khi làm feature `catalog`, ADMIN nhập và sửa qua màn quản trị.
+Lần build này nhập bằng seed. **Từ 25/11 đã có màn quản trị** (`/admin/catalog`, feature `catalog`): ADMIN nhập và sửa trực tiếp bệnh, ảnh minh hoạ, loại cây, chu kỳ, hướng dẫn chăm sóc và gán mã lớp, nên nhóm có thể nhập dữ liệu thật mà không cần gửi file. Màn "Nhãn mô hình" (`/admin/catalog/labels`) cho biết mã lớp nào của mô hình chưa được gán.
 
 | # | Dữ liệu | Hiện đang dùng (tạm) | Nơi trong hệ thống | Người cung cấp | Giá trị thật | Trạng thái |
 |---|---|---|---|---|---|---|
@@ -82,3 +82,4 @@ Lần build này nhập bằng seed. Khi làm feature `catalog`, ADMIN nhập v�
 |---|---|---|
 | 23/11/2026 | Tạo mới theo yêu cầu của Dương, sau `auth`, `disease_library`, `diagnosis`, `history` và tài liệu `my_plants` | Claude |
 | 24/11/2026 | `my_plants` đợt 2: B4, B7 đã nạp mẫu vào CSDL dev; C3 đổi tên khoá; thêm C5 | Claude |
+| 25/11/2026 | `catalog`: có màn quản trị để nhập dữ liệu thật (mục 2); A1 ghi danh sách nhãn của AI giả | Claude |

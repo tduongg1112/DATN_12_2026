@@ -12,6 +12,28 @@ import {
 export const MOCK_MODEL_VERSION = 'mock-1';
 export const MOCK_UNKNOWN_CLASS_CODE = 'MOCK___unknown_label';
 
+/**
+ * Danh sách nhãn của "mô hình" giả (`GET /labels`, TD-31 A): 11 mã của seed dev
+ * (`SAMPLE_LABELS`) và 3 mã chưa gán để thử màn "Nhãn mô hình" của `catalog`. Là dữ liệu
+ * tạm, thay bằng danh sách của nhóm AI (`docs/_shared/real_data_needed.md` A1).
+ */
+export const MOCK_MODEL_LABELS: readonly string[] = [
+  'Tomato___healthy',
+  'Tomato___Late_blight',
+  'Tomato___Early_blight',
+  'Potato___healthy',
+  'Potato___Late_blight',
+  'Corn_(maize)___healthy',
+  'Corn_(maize)___Common_rust_',
+  'Pepper,_bell___healthy',
+  'Pepper,_bell___Bacterial_spot',
+  'Rice___healthy',
+  'Rice___Brown_spot',
+  'Tomato___Leaf_Mold',
+  'Potato___Early_blight',
+  'Corn_(maize)___Northern_Leaf_Blight',
+];
+
 export interface MockAiClientOptions {
   timeoutMs: number;
   defaultTopK: number;
@@ -94,8 +116,9 @@ export class MockAiClient extends AiClient {
     };
   }
 
-  async getLabels(): Promise<string[]> {
-    return (await this.loadActiveLabels()).map((l) => l.classCode);
+  /** Danh sách cố định (TD-31 A); `predict` vẫn chỉ chọn trong các nhãn đang gán. */
+  getLabels(): Promise<string[]> {
+    return Promise.resolve([...MOCK_MODEL_LABELS]);
   }
 }
 
