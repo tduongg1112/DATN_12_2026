@@ -13,6 +13,9 @@ import { rememberedResult } from "@/lib/diagnosis/result-cache"
 import { DIAGNOSIS_TEXT as T, formatDiagnosisTime } from "@/lib/diagnosis/text"
 import { parsePositiveId, ROUTES } from "@/lib/navigation"
 import type { DiagnosisResult } from "@/lib/types/diagnosis"
+import type { PlantLink } from "@/lib/types/plants"
+
+import { SaveToPlant } from "../plants/save-to-plant"
 
 import {
   ResultActions,
@@ -58,10 +61,23 @@ export function DiagnosisResultView() {
     )
   }
   if (!data) return <ResultSkeleton />
-  return <ResultContent key={data.id} result={data} />
+  return (
+    <ResultContent
+      key={data.id}
+      result={data}
+      plantLink={remembered?.plantLink ?? null}
+    />
+  )
 }
 
-function ResultContent({ result }: { result: DiagnosisResult }) {
+function ResultContent({
+  result,
+  plantLink,
+}: {
+  result: DiagnosisResult
+  /** Kết quả gắn cây ngay lúc chẩn đoán từ hồ sơ cây (chỉ có khi vừa chẩn đoán xong). */
+  plantLink: PlantLink | null
+}) {
   return (
     // Mobile: chừa chỗ cho nút chính dính đáy trên dock.
     <div className="grid gap-2 pb-[calc(var(--ctl-md)+var(--s-3))] lg:grid-cols-12 lg:items-start lg:gap-5 lg:pb-0">
@@ -90,6 +106,7 @@ function ResultContent({ result }: { result: DiagnosisResult }) {
           </p>
         </div>
         <ResultActions {...resultLinks(result, T.RETAKE)} />
+        <SaveToPlant result={result} plantLink={plantLink} />
       </div>
     </div>
   )

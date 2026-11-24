@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 import { VALIDATION_ERROR } from '../../../common/exceptions/default-errors.js';
 import type { LabelType } from '../../catalog/entities/model-label.entity.js';
 import type {
@@ -7,6 +7,7 @@ import type {
   Severity,
 } from '../../catalog/entities/disease.entity.js';
 import { DIAGNOSIS_MESSAGES } from '../diagnosis-errors.js';
+import type { PlantLink } from '../../plants/dto/plant.dto.js';
 import type { ResultType } from '../entities/diagnosis.entity.js';
 
 /* DTO của docs/diagnosis/api_diagnosis.md (D1, D2). */
@@ -25,6 +26,17 @@ export class CreateDiagnosisDto {
   @IsInt(CROP_REQUIRED)
   @Type(() => Number)
   cropId: number;
+
+  /**
+   * Chẩn đoán từ hồ sơ cây (diagnosis BR-24; my_plants BR-07): kết quả tự gắn vào cây.
+   * Cây phải của người gọi và cùng loại cây với `cropId`.
+   */
+  @IsOptional()
+  @Max(Number.MAX_SAFE_INTEGER, INVALID)
+  @Min(1, INVALID)
+  @IsInt(INVALID)
+  @Type(() => Number)
+  plantId?: number;
 }
 
 /** D2. GET /diagnoses/:id */
@@ -55,6 +67,11 @@ export interface DiagnosisPredictionView {
   /** `null` với nhãn HEALTHY. */
   disease: DiagnosisDisease | null;
 }
+
+/** D1 201: như D2, kèm kết quả gắn vào cây khi gửi `plantId` (my_plants A1 `PlantLink`). */
+export type CreateDiagnosisResult = DiagnosisResult & {
+  plantLink: PlantLink | null;
+};
 
 /** Kết quả một lượt `COMPLETED` (D1 201, D2 200). */
 export interface DiagnosisResult {

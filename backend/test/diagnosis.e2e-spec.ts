@@ -263,7 +263,12 @@ describe('Diagnosis (e2e)', () => {
     const insertCrop = async (key: string, status: string) => {
       const [row] = await db.query<{ id: number }[]>(
         `INSERT INTO crops (code, name, status, care_guide) VALUES ($1, $2, $3, $4) RETURNING id`,
-        [`E2E${RUN}${key}`, `${P} cây ${key}`, status, `Gợi ý chăm sóc ${key}`],
+        [
+          `E2ED${RUN}${key}`,
+          `${P} cây ${key}`,
+          status,
+          `Gợi ý chăm sóc ${key}`,
+        ],
       );
       return Number(row.id);
     };
@@ -364,7 +369,7 @@ describe('Diagnosis (e2e)', () => {
       // AI nhận ảnh đã chỉnh, mã loại cây đã chọn, top_k = 3 (OQ-05, BR-07).
       expect(ai.calls).toHaveLength(1);
       expect(ai.calls[0]).toMatchObject({
-        cropCode: `E2E${RUN}T`,
+        cropCode: `E2ED${RUN}T`,
         contentType: 'image/png',
         topK: 3,
       });
@@ -380,11 +385,12 @@ describe('Diagnosis (e2e)', () => {
         createdAt: expect.any(String),
         crop: {
           id: crop.t,
-          code: `E2E${RUN}T`,
+          code: `E2ED${RUN}T`,
           name: `${P} cây T`,
           careGuide: 'Gợi ý chăm sóc T',
         },
         plant: null,
+        plantLink: null,
         originalImageUrl: expect.stringMatching(imageUrl('jpg')),
         processedImageUrl: expect.stringMatching(imageUrl('png')),
         predictions: [
@@ -635,7 +641,9 @@ describe('Diagnosis (e2e)', () => {
 
     it('lượt của chính mình: trả đúng như D1', async () => {
       const res = await getDiagnosis(id).expect(200);
-      expect(res.body).toEqual(created);
+      // D2 trả như D1, trừ `plantLink` (chỉ D1 có, my_plants A1).
+      const { plantLink: _plantLink, ...fromD1 } = created;
+      expect(res.body).toEqual(fromD1);
     });
 
     it('lượt của người khác: 404, kể cả ADMIN', async () => {

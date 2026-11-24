@@ -176,7 +176,7 @@ describe('History (e2e)', () => {
     const insertCrop = async (key: string) => {
       const [row] = await db.query<{ id: number }[]>(
         `INSERT INTO crops (code, name) VALUES ($1, $2) RETURNING id`,
-        [`E2E${RUN}${key}`, `${P} cây ${key}`],
+        [`E2EH${RUN}${key}`, `${P} cây ${key}`],
       );
       return Number(row.id);
     };
@@ -327,7 +327,7 @@ describe('History (e2e)', () => {
         resultType: 'DISEASE',
         createdAt: dg.d1.at.toISOString(),
         thumbnailUrl: `${publicBaseUrl}/e2e/d1.jpg`,
-        crop: { id: crop.a, code: `E2E${RUN}A`, name: `${P} cây A` },
+        crop: { id: crop.a, code: `E2EH${RUN}A`, name: `${P} cây A` },
         plant: { id: plantId, name: `${P} Cây thử` },
         probability: 0.8123,
         disease: {

@@ -42,6 +42,7 @@ export const ROUTES = {
   library: "/library",
   diagnose: "/diagnose",
   history: "/history",
+  plants: "/plants",
   adminHome: "/admin",
 } as const
 
@@ -72,6 +73,27 @@ export function parsePositiveId(value: string | null): number | null {
 /** Mở chẩn đoán, chọn sẵn loại cây khi biết (OQ-05: chọn loại cây là bắt buộc). */
 export function diagnoseHref(cropId?: number): string {
   return cropId ? `${ROUTES.diagnose}?cropId=${cropId}` : ROUTES.diagnose
+}
+
+/** Chẩn đoán từ hồ sơ cây (BR-24): loại cây khoá theo cây, kết quả tự gắn vào cây. */
+export function diagnosePlantHref(plantId: number): string {
+  return `${ROUTES.diagnose}?plantId=${plantId}`
+}
+
+/** Chi tiết, sửa, thêm cây (query string thay cho `[id]`, fe-coding-rules mục 3). */
+export function plantDetailHref(id: number): string {
+  return `${ROUTES.plants}/detail?id=${id}`
+}
+
+export function plantEditHref(id: number): string {
+  return `${ROUTES.plants}/edit?id=${id}`
+}
+
+/** Thêm cây; `diagnosisId` thì tạo cây từ kết quả chẩn đoán (A2). */
+export function plantNewHref(diagnosisId?: number): string {
+  return diagnosisId
+    ? `${ROUTES.plants}/new?diagnosisId=${diagnosisId}`
+    : `${ROUTES.plants}/new`
 }
 
 /** Màn kết quả chẩn đoán, query string thay cho `[id]` (fe-coding-rules mục 3). */

@@ -79,7 +79,7 @@ R = trực tiếp làm · A = chịu trách nhiệm/duyệt · C = được hỏ
 
 Thứ tự gợi ý ban đầu (cột #) dựa trên phụ thuộc dữ liệu: Function List ghi rằng UC chẩn đoán, thư viện và nhắc việc đều cần dữ liệu bệnh và mã lớp từ danh mục.
 
-**Thứ tự Dương chốt 22/11, sau `auth`:** `disease_library` → `diagnosis` → `history` → `my_plants` → `catalog` → `dashboard`. Làm các trang người dùng trước. Thư viện dựng trang chi tiết bệnh mà kết quả chẩn đoán cần mở. Trong lúc chưa có `catalog`, dùng dữ liệu seed dev, với nội dung bệnh mẫu do Claude soạn (OQ-36). "Lưu vào cây trồng" của `diagnosis` và `history` nối khi làm `my_plants`, vì lúc đó mới có cây để chọn. Mỗi feature duyệt hai lần như `auth`: duyệt tài liệu, rồi duyệt kế hoạch code.
+**Thứ tự Dương chốt 22/11, sau `auth`:** `disease_library` → `diagnosis` → `history` → `my_plants` → `catalog` → `dashboard`. Làm các trang người dùng trước. Thư viện dựng trang chi tiết bệnh mà kết quả chẩn đoán cần mở. **Dữ liệu đang dùng tạm** (nhãn mô hình, ngưỡng, nội dung bệnh, chu kỳ chăm sóc…) và mẫu gửi lại giá trị thật: [`_shared/real_data_needed.md`](_shared/real_data_needed.md). Trong lúc chưa có `catalog`, dùng dữ liệu seed dev, với nội dung bệnh mẫu do Claude soạn (OQ-36). "Lưu vào cây trồng" của `diagnosis` và `history` nối khi làm `my_plants`, vì lúc đó mới có cây để chọn. Mỗi feature duyệt hai lần như `auth`: duyệt tài liệu, rồi duyệt kế hoạch code.
 
 | # | Feature | UC | Mã chức năng (M/S/C) | Phụ thuộc | Còn chặn | specs | docs | code | test |
 |---|---|---|---|---|---|---|---|---|---|
@@ -87,7 +87,7 @@ Thứ tự gợi ý ban đầu (cột #) dựa trên phụ thuộc dữ liệu: 
 | 2 | [`catalog`](catalog/specs_catalog.md) | UC06 | ADM-01, 02, 07 (2/0/1) | auth | — | VERIFIED (build-first) | — | — | — |
 | 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](diagnosis/api_diagnosis.md), [db](diagnosis/database_design_diagnosis.md), `../design/screens/diagnosis.md` | DONE (build-first) | — |
 | 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | REVIEWED (build-first) · [api](history/api_history.md), [db](history/database_design_history.md), `../design/screens/history.md` | DONE (build-first) | — |
-| 5 | [`my_plants`](my_plants/specs_my_plants.md) | UC04 | PLANT-01..06 (4/1/1), NOTI-01..04 (0/3/1) | diagnosis | — | VERIFIED (build-first) | — | — | — |
+| 5 | [`my_plants`](my_plants/specs_my_plants.md) | UC04 | PLANT-01..06 (4/1/1), NOTI-01..04 (0/3/1) | diagnosis | — | VERIFIED (build-first) | REVIEWED (build-first) · [api](my_plants/api_my_plants.md), [db](my_plants/database_design_my_plants.md), [template](my_plants/template_my_plants.md), `../design/screens/my_plants.md` | IN PROGRESS: đợt 1 DONE (build-first), đợt 2 chưa làm | — |
 | 6 | [`disease_library`](disease_library/specs_disease_library.md) | UC05 | LIB-01..04 (1/1/2) | catalog | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](disease_library/api_disease_library.md), [db](disease_library/database_design_disease_library.md), `../design/screens/disease_library.md` | DONE (build-first) | — |
 | 7 | [`dashboard`](dashboard/specs_dashboard.md) | UC07 | ADM-03, 04, 06 (1/1/1) | diagnosis | — | VERIFIED (build-first) | — | — | — |
 

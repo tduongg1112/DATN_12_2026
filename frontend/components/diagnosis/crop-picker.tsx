@@ -21,6 +21,7 @@ export function CropPicker({
   value,
   onChange,
   error,
+  note = null,
 }: {
   crops: CropSummary[] | undefined
   loadError: ApiError | undefined
@@ -28,6 +29,8 @@ export function CropPicker({
   value: number | null
   onChange: (cropId: number) => void
   error: string | null
+  /** Dòng phụ dưới tiêu đề, vd "Chẩn đoán cho cây {tên}" khi loại cây bị khoá theo cây. */
+  note?: string | null
 }) {
   const errorId = React.useId()
 
@@ -66,6 +69,9 @@ export function CropPicker({
   return (
     <Card className="grid gap-4">
       <h3 className="m-0 type-h3">{T.CROP_TITLE}</h3>
+      {note && (
+        <p className="m-0 -mt-2 text-ink-secondary type-body-sm">{note}</p>
+      )}
       {body}
       {error && (
         <p id={errorId} role="alert" className="m-0 text-severe type-body-sm">

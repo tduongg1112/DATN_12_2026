@@ -14,6 +14,9 @@ import {
   type LabelMatch,
 } from '../catalog/model-label.service.js';
 import { NotificationsService } from '../plants/notifications.service.js';
+import type { PlantLink } from '../plants/dto/plant.dto.js';
+import { plantNotFound } from '../plants/plant-messages.js';
+import { PlantsService } from '../plants/plants.service.js';
 import {
   AiClient,
   AiServiceError,
@@ -25,6 +28,7 @@ import {
   cropNotFound,
   diagnosisNotFound,
   missingImage,
+  plantCropMismatch,
 } from './diagnosis-errors.js';
 import {
   classifyResult,
@@ -34,6 +38,7 @@ import {
 import type { DiagnosisUploadFiles } from './diagnosis-upload.interceptor.js';
 import type {
   CreateDiagnosisDto,
+  CreateDiagnosisResult,
   DiagnosisResult,
 } from './dto/diagnosis.dto.js';
 import { DiagnosisPrediction } from './entities/diagnosis-prediction.entity.js';
@@ -58,6 +63,7 @@ export class DiagnosisService {
     private readonly crops: CropService,
     private readonly labels: ModelLabelService,
     private readonly notifications: NotificationsService,
+    private readonly plants: PlantsService,
     private readonly ai: AiClient,
     private readonly storage: StorageService,
     config: ConfigService<EnvironmentVariables, true>,
@@ -75,10 +81,17 @@ export class DiagnosisService {
     userId: number,
     dto: CreateDiagnosisDto,
     files: DiagnosisUploadFiles | undefined,
-  ): Promise<DiagnosisResult> {
-    // 1. Kiểm tra loại cây (BR-07, OQ-05), rồi hai ảnh (BR-04, BR-06). Chưa ghi gì.
+  ): Promise<CreateDiagnosisResult> {
+    // 1. Kiểm tra loại cây (BR-07, OQ-05), cây nếu chẩn đoán từ hồ sơ cây (BR-24), rồi hai
+    //    ảnh (BR-04, BR-06). Chưa ghi gì.
     const crop = await this.crops.findActive(dto.cropId);
     if (!crop) throw cropNotFound();
+    const plant =
+      dto.plantId === undefined
+        ? null
+        : await this.plants.findOwnPlant(userId, dto.plantId);
+    if (dto.plantId !== undefined && !plant) throw plantNotFound();
+    if (plant && plant.cropId !== crop.id) throw plantCropMismatch();
     const original = files?.original?.[0]?.buffer;
     const processed = files?.processed?.[0]?.buffer;
     if (!original || !processed) throw missingImage();
@@ -88,17 +101,20 @@ export class DiagnosisService {
     // 2–3. Lưu ảnh, rồi ghi lượt PROCESSING trước khi gọi AI (BR-07).
     const stored = await this.saveImages(original, processed);
     let diagnosisId: number;
+    let createdAt: Date;
     try {
       const saved = await this.diagnoses.save(
         this.diagnoses.create({
           userId,
           cropId: crop.id,
+          plantId: plant?.id ?? null,
           originalImageUrl: stored[0].key,
           processedImageUrl: stored[1].key,
           status: 'PROCESSING',
         }),
       );
       diagnosisId = saved.id;
+      createdAt = saved.createdAt;
     } catch (error) {
       await this.deleteImages(stored);
       throw error;
@@ -133,7 +149,9 @@ export class DiagnosisService {
       throw aiUnavailable();
     }
 
-    // 6. Dạng kết quả (BR-12) và một giao dịch ghi kết quả (BR-13).
+    // 6. Dạng kết quả (BR-12) và một giao dịch ghi kết quả (BR-13); có cây thì áp kết
+    //    quả vào cây trong cùng giao dịch (BR-25, my_plants OQ-48).
+    let plantLink: PlantLink | null = null;
     const rows = result.predictions.map((p, i) => ({
       diagnosisId,
       labelId: (byCode.get(p.classCode) as LabelMatch).id,
@@ -166,6 +184,15 @@ export class DiagnosisService {
         if (updated.affected !== 1) {
           throw new Error('Lượt chẩn đoán không còn ở trạng thái PROCESSING');
         }
+        // Cây bị xoá trong lúc chờ AI thì `plant_id` đã thành NULL: bỏ qua, không lỗi.
+        if (plant) {
+          plantLink = await this.plants.applyDiagnosis(manager, plant.id, {
+            id: diagnosisId,
+            userId,
+            createdAt,
+            resultType,
+          });
+        }
       });
     } catch (error) {
       this.logger.error(
@@ -175,8 +202,8 @@ export class DiagnosisService {
       throw aiUnavailable();
     }
 
-    // 7. Trả kết quả như D2.
-    return this.getOwn(userId, diagnosisId);
+    // 7. Trả kết quả như D2, kèm kết quả gắn cây.
+    return { ...(await this.getOwn(userId, diagnosisId)), plantLink };
   }
 
   /**

@@ -21,7 +21,9 @@ import { cn } from "@/lib/utils"
  * Tiêu đề một lượt theo dạng kết quả (OQ-43): `UNCERTAIN` không lấy tên bệnh hạng 1 làm
  * tiêu đề, vì chưa phải kết luận (diagnosis BR-17).
  */
-export function historyTitle(item: HistoryItem): string {
+export function historyTitle(
+  item: Pick<HistoryItem, "resultType" | "disease">
+): string {
   if (item.resultType === "DISEASE" && item.disease) return item.disease.name
   if (item.resultType === "HEALTHY") return DIAGNOSIS_TEXT.HEALTHY_TITLE
   return DIAGNOSIS_TEXT.UNCERTAIN_TITLE

@@ -23,6 +23,8 @@ import { parsePositiveId, ROUTES } from "@/lib/navigation"
 import type { DiagnosisResult } from "@/lib/types/diagnosis"
 import { cn } from "@/lib/utils"
 
+import { SaveToPlant } from "../plants/save-to-plant"
+
 /**
  * S2 Chi tiết lần tra cứu `/history/detail?id=` (US-03, US-05; BR-04, 05, 07). Dữ liệu từ D2;
  * khối kết quả dùng chung với màn kết quả chẩn đoán. Đọc `useSearchParams` nên trang phải
@@ -106,6 +108,7 @@ function DetailContent({ result }: { result: DiagnosisResult }) {
         <ResultActions
           {...resultLinks(result, DIAGNOSIS_TEXT.DIAGNOSE_AGAIN)}
         />
+        <SaveToPlant result={result} />
       </div>
     </div>
   )

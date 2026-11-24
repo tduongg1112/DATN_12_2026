@@ -1,6 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
 import { AppException } from '../../common/exceptions/app.exception.js';
-import { DEFAULT_ERRORS } from '../../common/exceptions/default-errors.js';
+import {
+  DEFAULT_ERRORS,
+  VALIDATION_ERROR,
+} from '../../common/exceptions/default-errors.js';
 import { INVALID_IMAGE_MESSAGE } from '../../common/storage/image-validation.js';
 import { AiServiceError } from './ai/ai-client.js';
 
@@ -27,6 +30,19 @@ export function cropNotFound(): AppException {
     'CROP_NOT_FOUND',
     DIAGNOSIS_MESSAGES.CROP_REQUIRED,
     [{ field: 'cropId', message: DIAGNOSIS_MESSAGES.CROP_REQUIRED }],
+  );
+}
+
+/**
+ * 400 VALIDATION_ERROR trường `cropId`: chẩn đoán từ hồ sơ cây mà loại cây khác loại cây
+ * của cây (BR-24; giao diện khoá chip loại cây nên chỉ gặp khi gửi tay).
+ */
+export function plantCropMismatch(): AppException {
+  return new AppException(
+    HttpStatus.BAD_REQUEST,
+    VALIDATION_ERROR.code,
+    VALIDATION_ERROR.message,
+    [{ field: 'cropId', message: VALIDATION_ERROR.message }],
   );
 }
 

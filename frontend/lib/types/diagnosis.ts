@@ -1,4 +1,5 @@
 import type { PathogenGroup, Severity } from "./domain"
+import type { PlantLink } from "./plants"
 
 /** Dạng kết quả (Bảng 4.4, BR-12). */
 export type ResultType = "DISEASE" | "HEALTHY" | "UNCERTAIN"
@@ -44,6 +45,11 @@ export interface DiagnosisResult {
   predictions: DiagnosisPrediction[]
 }
 
+/** D1 201: như D2, kèm kết quả gắn cây khi chẩn đoán từ hồ sơ cây (my_plants A1). */
+export type CreateDiagnosisResult = DiagnosisResult & {
+  plantLink: PlantLink | null
+}
+
 /** Dữ liệu gửi D1 (BR-06, BR-07). */
 export interface CreateDiagnosisInput {
   /** Ảnh đã chọn hoặc chụp, đã nén (TD-17). */
@@ -51,4 +57,6 @@ export interface CreateDiagnosisInput {
   /** Ảnh vuông đã chỉnh; đây là ảnh gửi AI. */
   processed: Blob
   cropId: number
+  /** Chẩn đoán từ hồ sơ cây (BR-24): kết quả tự gắn vào cây. */
+  plantId?: number
 }

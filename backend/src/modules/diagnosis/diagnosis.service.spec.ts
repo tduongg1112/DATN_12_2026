@@ -6,6 +6,7 @@ import type { EnvironmentVariables } from '../../config/env.validation.js';
 import type { CropService } from '../catalog/crop.service.js';
 import type { ModelLabelService } from '../catalog/model-label.service.js';
 import type { NotificationsService } from '../plants/notifications.service.js';
+import type { PlantsService } from '../plants/plants.service.js';
 import { AiServiceError, type AiClient } from './ai/ai-client.js';
 import { DiagnosisService } from './diagnosis.service.js';
 import type { DiagnosisPrediction } from './entities/diagnosis-prediction.entity.js';
@@ -36,6 +37,10 @@ function setup() {
   const labels = { findActiveByCodes: vi.fn().mockResolvedValue([]) };
   const notifications = { notifyAdminsOnce: vi.fn().mockResolvedValue(1) };
   const ai = { predict: vi.fn() };
+  const plants = {
+    findOwnPlant: vi.fn().mockResolvedValue(null),
+    applyDiagnosis: vi.fn(),
+  };
   let n = 0;
   const storage = {
     saveImage: vi.fn(async () => ({ key: `diagnoses/k${++n}.jpg` })),
@@ -55,6 +60,7 @@ function setup() {
     crops as unknown as CropService,
     labels as unknown as ModelLabelService,
     notifications as unknown as NotificationsService,
+    plants as unknown as PlantsService,
     ai as unknown as AiClient,
     storage as unknown as StorageService,
     config,
@@ -129,6 +135,7 @@ describe('DiagnosisService.create (D1)', () => {
     expect(s.diagnoses.create).toHaveBeenCalledWith({
       userId: 1,
       cropId: 3,
+      plantId: null,
       originalImageUrl: 'diagnoses/k1.jpg',
       processedImageUrl: 'diagnoses/k2.jpg',
       status: 'PROCESSING',

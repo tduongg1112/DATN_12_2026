@@ -12,6 +12,8 @@ import { DiagnosisController } from './diagnosis.controller.js';
 import { DiagnosisService } from './diagnosis.service.js';
 import { HistoryController } from './history/history.controller.js';
 import { HistoryService } from './history/history.service.js';
+import { PlantLinkController } from './plant-link/plant-link.controller.js';
+import { PlantLinkService } from './plant-link/plant-link.service.js';
 import { DiagnosisPrediction } from './entities/diagnosis-prediction.entity.js';
 import { Diagnosis } from './entities/diagnosis.entity.js';
 
@@ -26,10 +28,11 @@ import { Diagnosis } from './entities/diagnosis.entity.js';
     CatalogModule,
     PlantsModule,
   ],
-  controllers: [DiagnosisController, HistoryController],
+  controllers: [DiagnosisController, HistoryController, PlantLinkController],
   providers: [
     DiagnosisService,
     HistoryService,
+    PlantLinkService,
     {
       provide: AiClient,
       inject: [ConfigService, ModelLabelService],

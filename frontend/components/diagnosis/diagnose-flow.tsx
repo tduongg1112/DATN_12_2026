@@ -9,6 +9,7 @@ import { useApiRequest } from "@/hooks/use-api-request"
 import { CLIENT_ERRORS, fieldErrors, isApiError } from "@/lib/api"
 import { diagnosesApi } from "@/lib/api/diagnoses"
 import { libraryApi } from "@/lib/api/library"
+import { plantsApi } from "@/lib/api/plants"
 import { device, IMAGE_RULES, validateImageFile } from "@/lib/device"
 import {
   exportEdited,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/diagnosis/image-edit"
 import { rememberResult } from "@/lib/diagnosis/result-cache"
 import { DIAGNOSIS_TEXT as T } from "@/lib/diagnosis/text"
+import { PLANTS_TEXT } from "@/lib/plants/text"
 import { diagnosisResultHref, parsePositiveId } from "@/lib/navigation"
 import type { CreateDiagnosisInput } from "@/lib/types/diagnosis"
 
@@ -50,13 +52,24 @@ const CROP_ERROR_CODES = new Set(["VALIDATION_ERROR", "CROP_NOT_FOUND"])
 /**
  * Luồng chẩn đoán trên `/diagnose` (UC02): S1 chọn ảnh → S2 máy ảnh → S3 chỉnh ảnh, chọn
  * loại cây → S4 đang phân tích → `/diagnose/result?id=`. Ảnh chỉ nằm trong bộ nhớ, tải lại
- * trang thì về S1. `?cropId=` chọn sẵn loại cây (OQ-05). Đọc `useSearchParams` nên trang
+ * trang thì về S1. `?cropId=` chọn sẵn loại cây (OQ-05). `?plantId=` chẩn đoán từ hồ sơ
+ * cây (BR-24): khoá loại cây theo cây, kết quả tự gắn vào cây; cây không mở được thì chẩn
+ * đoán như thường. Đọc `useSearchParams` nên trang
  * phải bọc `<Suspense>`.
  */
 export function DiagnoseFlow() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const crops = useApiRequest("crops", (signal) => libraryApi.crops(signal))
+  const plantIdParam = parsePositiveId(searchParams.get("plantId"))
+  const plantRequest = useApiRequest(
+    plantIdParam === null ? null : `plant:${plantIdParam}`,
+    (signal) => plantsApi.get(plantIdParam ?? 0, signal)
+  )
+  const plant =
+    plantRequest.data?.id === plantIdParam ? plantRequest.data : null
+  /** Đang chờ thông tin cây thì chưa hiện chip loại cây. */
+  const waitingPlant = plantIdParam !== null && !plant && !plantRequest.error
 
   const [cameraOpen, setCameraOpen] = React.useState(false)
   const [photo, setPhoto] = React.useState<Photo | null>(null)
@@ -76,8 +89,11 @@ export function DiagnoseFlow() {
   const uploadRef = React.useRef<CreateDiagnosisInput | null>(null)
 
   // Loại cây chọn sẵn từ URL chỉ dùng khi còn trong danh sách đang hiện.
-  const selectedCropId =
-    cropId !== null && crops.data?.some((c) => c.id === cropId) ? cropId : null
+  const selectedCropId = plant
+    ? plant.crop.id
+    : cropId !== null && crops.data?.some((c) => c.id === cropId)
+      ? cropId
+      : null
 
   // Giải phóng ảnh cũ khi đổi ảnh hoặc rời trang.
   React.useEffect(() => () => photo?.bitmap.close(), [photo])
@@ -175,6 +191,7 @@ export function DiagnoseFlow() {
         original: photo.original,
         processed,
         cropId: selectedCropId,
+        plantId: plant?.id,
       }
     } catch {
       setSubmission({
@@ -248,7 +265,14 @@ export function DiagnoseFlow() {
                     onRetake={retake}
                   />
                   <CropPicker
-                    crops={crops.data}
+                    crops={
+                      plant
+                        ? [plant.crop]
+                        : waitingPlant
+                          ? undefined
+                          : crops.data
+                    }
+                    note={plant ? PLANTS_TEXT.DIAGNOSE_FOR(plant.name) : null}
                     loadError={crops.error}
                     onReload={crops.reload}
                     value={selectedCropId}

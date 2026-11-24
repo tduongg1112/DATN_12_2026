@@ -18,6 +18,7 @@ import { DiagnosisService } from './diagnosis.service.js';
 import {
   CreateDiagnosisDto,
   DiagnosisIdParam,
+  type CreateDiagnosisResult,
   type DiagnosisResult,
 } from './dto/diagnosis.dto.js';
 
@@ -37,7 +38,7 @@ export class DiagnosisController {
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateDiagnosisDto,
     @UploadedFiles() files?: DiagnosisUploadFiles,
-  ): Promise<DiagnosisResult> {
+  ): Promise<CreateDiagnosisResult> {
     return this.diagnosis.create(user.id, dto, files);
   }
 
