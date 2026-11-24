@@ -5,6 +5,7 @@ import type {
   PlantFormValues,
   PlantLogView,
   ReminderSuggestion,
+  ReminderView,
 } from "@/lib/types/plants"
 
 import { api } from "./client"
@@ -62,6 +63,14 @@ export const plantsApi = {
   /** P6 (OQ-47). */
   changeStatus: (id: number, status: ManualStatus) =>
     api.post<PlantDetail>(`/plants/${id}/status`, { status }),
+
+  /** R1: "Nhắc tôi kiểm tra lại" sau 3, 7, 14 ngày (BR-14). */
+  createRecheck: (id: number, days: number) =>
+    api.post<ReminderView>(`/plants/${id}/reminders/recheck`, { days }),
+
+  /** R2: tạo các nhắc gợi ý đã chọn; backend tính lại, không tạo trùng (BR-16). */
+  createSuggested: (id: number, types: ReminderSuggestion["type"][]) =>
+    api.post<ReminderView[]>(`/plants/${id}/reminders/suggested`, { types }),
 
   /** P7. */
   addLog: (

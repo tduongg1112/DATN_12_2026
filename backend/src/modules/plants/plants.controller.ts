@@ -20,12 +20,15 @@ import {
   CreatePlantLogDto,
   ListPlantsQuery,
   PlantIdParam,
+  RecheckReminderDto,
+  SuggestedRemindersDto,
   UpdatePlantDto,
   UpdatePlantStatusDto,
   type PlantDetail,
   type PlantLogView,
   type PlantsPage,
   type ReminderSuggestion,
+  type ReminderView,
 } from './dto/plant.dto.js';
 import {
   PlantAvatarInterceptor,
@@ -103,6 +106,26 @@ export class PlantsController {
     @Body() dto: UpdatePlantStatusDto,
   ): Promise<PlantDetail> {
     return this.plants.changeStatus(user.id, params.id, dto.status);
+  }
+
+  /** R1 (US-09): "Nhắc tôi kiểm tra lại". */
+  @Post(':id/reminders/recheck')
+  createRecheck(
+    @CurrentUser() user: AuthUser,
+    @Param() params: PlantIdParam,
+    @Body() dto: RecheckReminderDto,
+  ): Promise<ReminderView> {
+    return this.plants.createRecheckReminder(user.id, params.id, dto.days);
+  }
+
+  /** R2 (US-11): tạo các nhắc gợi ý đã xác nhận. */
+  @Post(':id/reminders/suggested')
+  createSuggested(
+    @CurrentUser() user: AuthUser,
+    @Param() params: PlantIdParam,
+    @Body() dto: SuggestedRemindersDto,
+  ): Promise<ReminderView[]> {
+    return this.plants.createSuggestedReminders(user.id, params.id, dto.types);
   }
 
   /** P7 (US-06). */

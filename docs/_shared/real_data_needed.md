@@ -29,10 +29,10 @@ Lần build này nhập bằng seed. Khi làm feature `catalog`, ADMIN nhập v�
 | B1 | **Danh sách bệnh** của từng loại cây: tên thường gọi, tác nhân, nhóm tác nhân (nấm, vi khuẩn, virus, côn trùng/nhện hại, sinh lý), mức độ nguy hại (thấp, trung bình, cao) | 6 bệnh mẫu chép từ SQL 04 (mỗi loại cây 1, cà chua 2) | Bảng `diseases`; `dev-sample-seed.ts` (`SAMPLE_DISEASES`) | Nhóm + AI (phải khớp A1) | | Chưa có |
 | B2 | **Nội dung từng bệnh**: mô tả ngắn (≤ 500 ký tự), triệu chứng, nguyên nhân và điều kiện phát sinh, biện pháp phòng ngừa, biện pháp xử lý. Văn bản thuần, mỗi ý một dòng | Claude soạn mẫu (OQ-36), **không dùng cho demo** | `dev-sample-content.ts` (`SAMPLE_DISEASE_CONTENT`) | Nhóm (OQ-19) | | Chưa có |
 | B3 | Ảnh minh hoạ từng bệnh (JPG/PNG ≤ 10 MB, kèm chú thích, ảnh đầu tiên là ảnh bìa) | Chưa có ảnh nào; giao diện hiện ảnh thay thế | Bảng `disease_images` | Nhóm | | Chưa có |
-| B4 | **Số ngày nên kiểm tra lại** sau khi phát hiện từng bệnh (gợi ý nhắc "Kiểm tra lại") | `7` ngày cho cả 6 bệnh mẫu (OQ-52) | Cột `diseases.recheck_days`; seed dev (đợt 2 `my_plants`) | Nhóm | | Chưa có |
+| B4 | **Số ngày nên kiểm tra lại** sau khi phát hiện từng bệnh (gợi ý nhắc "Kiểm tra lại") | `7` ngày cho cả 6 bệnh mẫu (OQ-52, đã nạp vào CSDL dev 24/11) | Cột `diseases.recheck_days`; `dev-sample-content.ts` (`SAMPLE_RECHECK_DAYS`) | Nhóm | | Chưa có |
 | B5 | Bệnh nổi bật trên trang chủ | "Bệnh mốc sương" (cà chua) | Cột `diseases.is_featured` | Nhóm | | Chưa có |
 | B6 | **Gợi ý chăm sóc phòng bệnh** của từng loại cây (hiện ở kết quả "Cây khoẻ mạnh") | Claude soạn mẫu (OQ-41), **không dùng cho demo** | Cột `crops.care_guide`; `dev-sample-content.ts` (`SAMPLE_CROP_CARE_GUIDES`) | Nhóm | | Chưa có |
-| B7 | **Chu kỳ tưới, bón** (ngày) của từng loại cây (gợi ý nhắc tưới, bón) | Tưới/bón: Lúa —/20, Ngô 3/21, Cà chua 2/14, Ớt 2/14, Khoai tây 3/14 (OQ-52) | Cột `crops.watering_interval_days`, `fertilizing_interval_days`; seed dev (đợt 2 `my_plants`) | Nhóm | | Chưa có |
+| B7 | **Chu kỳ tưới, bón** (ngày) của từng loại cây (gợi ý nhắc tưới, bón) | Tưới/bón: Lúa —/20, Ngô 3/21, Cà chua 2/14, Ớt 2/14, Khoai tây 3/14 (OQ-52, đã nạp vào CSDL dev 24/11) | Cột `crops.watering_interval_days`, `fertilizing_interval_days`; `dev-sample-content.ts` (`SAMPLE_CROP_INTERVALS`) | Nhóm | | Chưa có |
 | B8 | Mô tả, ảnh của từng loại cây | Trống | Cột `crops.description`, `crops.image_url` | Nhóm | | Chưa có |
 | B9 | Ghi nguồn tham khảo cho nội dung bệnh | Chưa có chỗ lưu (DC-04 bỏ `source_refs`) | — (OQ-19 chưa chốt) | Nhóm | | Chưa có |
 
@@ -42,7 +42,8 @@ Lần build này nhập bằng seed. Khi làm feature `catalog`, ADMIN nhập v�
 |---|---|---|---|---|---|---|
 | C1 | "Đang phổ biến": số bệnh, số ngày | 3 bệnh, 30 ngày | `LIBRARY_TRENDING_LIMIT`, `LIBRARY_TRENDING_DAYS` (OQ-28, TD-24) | D | | Đã chốt cho bản build, đổi được |
 | C2 | Nén ảnh trước khi gửi | Cạnh dài 1600 px, JPEG 0.85 | `frontend/lib/device/image.ts` (TD-17) | D + AI | | Chờ AI xác nhận cùng A7 |
-| C3 | Tần suất job gửi nhắc | Mỗi 5 phút | `REMINDER_CRON` (TD-28, đợt 2 `my_plants`) | D | | Đã chốt cho bản build, đổi được |
+| C3 | Tần suất job gửi nhắc | Mỗi 5 phút | `REMINDER_JOB_INTERVAL_MINUTES` (TD-28) | D | | Đã chốt cho bản build, đổi được |
+| C5 | Nội dung thông báo nhắc việc, tiêu đề lịch nhắc | Claude soạn (OQ-51) | `docs/my_plants/template_my_plants.md`, `plants/reminder-rules.ts` | Nhóm | | Đã duyệt cho bản build, sửa được |
 | C4 | Tài khoản ADMIN đầu tiên | Lấy từ `.env` | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | D | (không ghi vào file này) | Dùng khi deploy |
 
 ## 4. Mẫu gửi lại (Excel hoặc CSV)
@@ -80,3 +81,4 @@ Lần build này nhập bằng seed. Khi làm feature `catalog`, ADMIN nhập v�
 | Ngày | Nội dung | Người |
 |---|---|---|
 | 23/11/2026 | Tạo mới theo yêu cầu của Dương, sau `auth`, `disease_library`, `diagnosis`, `history` và tài liệu `my_plants` | Claude |
+| 24/11/2026 | `my_plants` đợt 2: B4, B7 đã nạp mẫu vào CSDL dev; C3 đổi tên khoá; thêm C5 | Claude |

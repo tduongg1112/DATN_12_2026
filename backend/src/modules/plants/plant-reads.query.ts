@@ -28,6 +28,8 @@ export interface PlantDiagnosisRow {
   disease_severity: Severity | null;
   disease_treatment: string | null;
   disease_available: boolean | null;
+  /** Số ngày nên kiểm tra lại (diagnosis BR-26). */
+  disease_recheck_days: number | null;
 }
 
 /** Lượt `COMPLETED`, chưa xoá mềm (BR-06: "lượt còn hiệu lực"). */
@@ -82,7 +84,7 @@ export class PlantReadsQuery {
       `SELECT d.id, d.created_at, d.result_type, d.processed_image_url,
               p.probability::float8 AS probability,
               ds.id AS disease_id, ds.name AS disease_name, ds.severity AS disease_severity,
-              ds.treatment AS disease_treatment,
+              ds.treatment AS disease_treatment, ds.recheck_days AS disease_recheck_days,
               (ds.status = 'PUBLISHED' AND dc.status = 'ACTIVE') AS disease_available
          FROM diagnoses d
          JOIN diagnosis_predictions p ON p.diagnosis_id = d.id AND p.rank_no = 1
@@ -98,6 +100,25 @@ export class PlantReadsQuery {
       id: Number(r.id),
       disease_id: r.disease_id === null ? null : Number(r.disease_id),
     }));
+  }
+
+  /**
+   * `recheck_days` của bệnh hạng 1 của một lượt (gợi ý `RECHECK`, diagnosis BR-26). Chạy trong
+   * giao dịch của bên gọi; không có bệnh hoặc chưa đặt số ngày thì `null`.
+   */
+  async recheckDaysOf(
+    manager: EntityManager,
+    diagnosisId: number,
+  ): Promise<number | null> {
+    const [row] = await manager.query<{ recheck_days: number | null }[]>(
+      `SELECT ds.recheck_days
+         FROM diagnosis_predictions p
+         JOIN model_labels ml ON ml.id = p.label_id
+         JOIN diseases ds ON ds.id = ml.disease_id
+        WHERE p.diagnosis_id = $1 AND p.rank_no = 1`,
+      [diagnosisId],
+    );
+    return row?.recheck_days ?? null;
   }
 
   /**

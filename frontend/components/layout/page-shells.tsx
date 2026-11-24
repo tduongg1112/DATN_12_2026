@@ -10,6 +10,7 @@ import { useRecordPageVisit } from "@/lib/navigation-history"
 import { cn } from "@/lib/utils"
 
 import { AppTopbar } from "./app-topbar"
+import { NotificationBell } from "./notification-bell"
 import { UserMenu } from "./user-menu"
 
 /** Khuôn trang theo design/06. */
@@ -73,6 +74,7 @@ export function UserPageShell({
           actions={
             <>
               {actions}
+              <NotificationBell />
               <AdminAreaLink />
             </>
           }
@@ -98,7 +100,12 @@ export function AdminPageShell({
           title={title}
           backHref={backHref}
           leading={<UserMenu />}
-          actions={actions}
+          actions={
+            <>
+              {actions}
+              <NotificationBell />
+            </>
+          }
         />
         {children}
       </main>

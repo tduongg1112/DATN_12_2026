@@ -121,6 +121,34 @@ export const PLANTS_TEXT = {
   /** ✎ */
   DIAGNOSE_FOR: (name: string) => `Chẩn đoán cho cây ${name}`,
 
+  // Nhắc việc (đợt 2)
+  /** C4 9f */
+  REMIND_ME: "Nhắc tôi kiểm tra lại",
+  /** ✎ */
+  RECHECK_AFTER: (days: number) => `Sau ${days} ngày`,
+  /** ✎ */
+  SET_REMINDER: "Đặt nhắc",
+  /** ✎ */
+  RECHECK_SET: "Đã đặt nhắc kiểm tra lại",
+  /** ✎ */
+  NEXT_AT: (time: string) => `Lần tới: ${time}`,
+  /** ✎ */
+  EVERY: (days: number) => `mỗi ${days} ngày`,
+  /** ✎ */
+  SUGGEST_TITLE: "Gợi ý lịch nhắc",
+  /** ✎ */
+  SUGGEST: {
+    WATERING: (days: number) => `Tưới nước mỗi ${days} ngày`,
+    FERTILIZING: (days: number) => `Bón phân mỗi ${days} ngày`,
+    RECHECK: (days: number) => `Kiểm tra lại sau ${days} ngày`,
+  },
+  /** ✎ */
+  CREATE_REMINDERS: "Tạo lịch nhắc",
+  /** ✎ */
+  SKIP: "Bỏ qua",
+  /** ✎ */
+  REMINDERS_CREATED: "Đã tạo lịch nhắc",
+
   /** ✎ chỉ cho trình đọc màn hình */
   REMOVE_IMAGE: "Bỏ ảnh",
   /** ✎ chỉ cho trình đọc màn hình */

@@ -21,13 +21,13 @@ import type { DiagnosisResult } from "@/lib/types/diagnosis"
 import type { PlantCard, PlantLink } from "@/lib/types/plants"
 import { cn } from "@/lib/utils"
 
-import { RecoveredDialog } from "./plant-sheets"
+import { PlantFollowUps } from "./reminder-sheets"
 
 /**
  * "Lưu vào cây trồng của tôi" trên màn kết quả chẩn đoán và chi tiết lịch sử (diagnosis
  * BR-22, 23; history BR-06; design/screens/my_plants.md S5). Lượt đã gắn cây thì hiện dòng
  * "Đã lưu vào hồ sơ cây {tên}" có liên kết. `plantLink` là kết quả gắn ngay lúc chẩn đoán
- * từ hồ sơ cây (D1): có gợi ý "Đã khỏi" thì hỏi một lần.
+ * từ hồ sơ cây (D1). Sau khi gắn: hỏi "Cây đã khỏi bệnh?" rồi "Gợi ý lịch nhắc" nếu có.
  */
 export function SaveToPlant({
   result,
@@ -41,16 +41,17 @@ export function SaveToPlant({
     name: string
   } | null>(result.plant)
   const [open, setOpen] = React.useState(false)
-  const [recovered, setRecovered] = React.useState<{
-    id: number
-    name: string
-  } | null>(plantLink?.suggestRecovered ? plantLink.plant : null)
+  /** Lần gắn gần nhất cần hỏi tiếp; `key` để mỗi lần gắn bắt đầu lại từ đầu. */
+  const [followUp, setFollowUp] = React.useState<{
+    key: number
+    link: PlantLink
+  } | null>(plantLink ? { key: 0, link: plantLink } : null)
 
   function handleLinked(link: PlantLink) {
     setLinked({ id: link.plant.id, name: link.plant.name })
     setOpen(false)
     notify(T.SAVED_TO_PLANT)
-    if (link.suggestRecovered) setRecovered(link.plant)
+    setFollowUp((prev) => ({ key: (prev?.key ?? 0) + 1, link }))
   }
 
   return (
@@ -77,13 +78,11 @@ export function SaveToPlant({
           onLinked={handleLinked}
         />
       )}
-      {recovered && (
-        <RecoveredDialog
-          plant={recovered}
-          open
-          onOpenChange={(next) => {
-            if (!next) setRecovered(null)
-          }}
+      {followUp && (
+        <PlantFollowUps
+          key={followUp.key}
+          link={followUp.link}
+          onDone={() => setFollowUp(null)}
         />
       )}
     </>

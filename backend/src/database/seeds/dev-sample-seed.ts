@@ -11,7 +11,9 @@ import {
 } from '../../modules/catalog/entities/model-label.entity.js';
 import {
   SAMPLE_CROP_CARE_GUIDES,
+  SAMPLE_CROP_INTERVALS,
   SAMPLE_DISEASE_CONTENT,
+  SAMPLE_RECHECK_DAYS,
 } from './dev-sample-content.js';
 
 /*
@@ -198,12 +200,52 @@ async function fillSampleCareGuides(manager: EntityManager): Promise<number> {
   return filled;
 }
 
+/**
+ * Điền chu kỳ tưới, bón (OQ-52) cho loại cây **chưa có** cả hai giá trị, và số ngày kiểm tra
+ * lại cho bệnh mẫu chưa có. Giá trị đã nhập giữ nguyên.
+ */
+async function fillSampleIntervals(
+  manager: EntityManager,
+): Promise<{ crops: number; diseases: number }> {
+  const crops = manager.getRepository(Crop);
+  let cropsFilled = 0;
+  for (const c of SAMPLE_CROP_INTERVALS) {
+    const result = await crops.update(
+      {
+        code: c.cropCode,
+        wateringIntervalDays: IsNull(),
+        fertilizingIntervalDays: IsNull(),
+      },
+      {
+        wateringIntervalDays: c.wateringDays,
+        fertilizingIntervalDays: c.fertilizingDays,
+      },
+    );
+    cropsFilled += result.affected ?? 0;
+  }
+  let diseasesFilled = 0;
+  for (const d of SAMPLE_DISEASES) {
+    const crop = await crops.findOneBy({ code: d.cropCode });
+    if (!crop) continue;
+    const result = await manager
+      .getRepository(Disease)
+      .update(
+        { cropId: crop.id, name: d.name, recheckDays: IsNull() },
+        { recheckDays: SAMPLE_RECHECK_DAYS },
+      );
+    diseasesFilled += result.affected ?? 0;
+  }
+  return { crops: cropsFilled, diseases: diseasesFilled };
+}
+
 /** Cần chạy sau base seed (cần 5 loại cây). Chạy lại không tạo trùng. */
 export async function runDevSampleSeed(manager: EntityManager): Promise<{
   diseasesCreated: number;
   diseasesFilled: number;
   labelsCreated: number;
   careGuidesFilled: number;
+  intervalsFilled: number;
+  recheckDaysFilled: number;
 }> {
   const crops = await manager.getRepository(Crop).find();
   const cropId = (code: string) => {
@@ -252,5 +294,13 @@ export async function runDevSampleSeed(manager: EntityManager): Promise<{
   }
   const diseasesFilled = await fillSampleContent(manager, cropId);
   const careGuidesFilled = await fillSampleCareGuides(manager);
-  return { diseasesCreated, diseasesFilled, labelsCreated, careGuidesFilled };
+  const intervals = await fillSampleIntervals(manager);
+  return {
+    diseasesCreated,
+    diseasesFilled,
+    labelsCreated,
+    careGuidesFilled,
+    intervalsFilled: intervals.crops,
+    recheckDaysFilled: intervals.diseases,
+  };
 }

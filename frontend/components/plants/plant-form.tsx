@@ -17,6 +17,7 @@ import { libraryApi } from "@/lib/api/library"
 import { plantsApi } from "@/lib/api/plants"
 import { useBackNavigation } from "@/lib/navigation-history"
 import { plantDetailHref, ROUTES } from "@/lib/navigation"
+import { rememberSuggestions } from "@/lib/plants/follow-ups"
 import { PLANTS_TEXT as T, todayInput } from "@/lib/plants/text"
 import type { PlantDetail, PlantFormValues } from "@/lib/types/plants"
 import { cn } from "@/lib/utils"
@@ -89,10 +90,12 @@ export function PlantForm({ mode }: { mode: Mode }) {
           values
         )
         notify(T.SAVED_TO_PLANT)
+        rememberSuggestions(link.plant.id, link.suggestions)
         router.replace(plantDetailHref(link.plant.id))
       } else {
-        const { plant } = await plantsApi.create(values)
+        const { plant, suggestions } = await plantsApi.create(values)
         notify(T.ADDED)
+        rememberSuggestions(plant.id, suggestions)
         router.replace(plantDetailHref(plant.id))
       }
     } catch (error) {

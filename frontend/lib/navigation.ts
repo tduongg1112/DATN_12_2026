@@ -43,6 +43,7 @@ export const ROUTES = {
   diagnose: "/diagnose",
   history: "/history",
   plants: "/plants",
+  notifications: "/notifications",
   adminHome: "/admin",
 } as const
 

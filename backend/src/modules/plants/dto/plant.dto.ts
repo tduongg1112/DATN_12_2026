@@ -1,5 +1,9 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  ArrayUnique,
+  IsArray,
   IsIn,
   IsInt,
   IsOptional,
@@ -200,6 +204,22 @@ export class CreatePlantLogDto {
   @Validate(RealDate, INVALID)
   @Transform(emptyToUndefined)
   actionDate?: string;
+}
+
+/** R1 (BR-14): sau 3, 7 hoặc 14 ngày. */
+export class RecheckReminderDto {
+  @IsIn([3, 7, 14], INVALID)
+  days: number;
+}
+
+/** R2: các loại nhắc gợi ý người dùng đã chọn. */
+export class SuggestedRemindersDto {
+  @IsIn(['WATERING', 'FERTILIZING', 'RECHECK'], { ...INVALID, each: true })
+  @ArrayUnique({}, INVALID)
+  @ArrayMaxSize(3, INVALID)
+  @ArrayMinSize(1, INVALID)
+  @IsArray(INVALID)
+  types: ReminderSuggestion['type'][];
 }
 
 /** A1 body; D1 trường `plantId`. */

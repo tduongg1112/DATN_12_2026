@@ -18,6 +18,27 @@ export class CropService {
     @InjectRepository(Crop) private readonly crops: Repository<Crop>,
   ) {}
 
+  /**
+   * Chu kỳ tưới, bón (ngày) của loại cây, để gợi ý nhắc (my_plants BR-18). Không đọc
+   * trạng thái hiện: cây đã tạo vẫn được gợi ý dù loại cây bị ẩn sau đó.
+   */
+  async careIntervals(
+    cropId: number,
+  ): Promise<{ wateringDays: number | null; fertilizingDays: number | null }> {
+    const crop = await this.crops.findOne({
+      select: {
+        id: true,
+        wateringIntervalDays: true,
+        fertilizingIntervalDays: true,
+      },
+      where: { id: cropId },
+    });
+    return {
+      wateringDays: crop?.wateringIntervalDays ?? null,
+      fertilizingDays: crop?.fertilizingIntervalDays ?? null,
+    };
+  }
+
   /** Loại cây `ACTIVE` theo id; không có hoặc đang ẩn thì `null` (diagnosis Q1). */
   async findActive(id: number): Promise<ActiveCrop | null> {
     const crop = await this.crops.findOne({

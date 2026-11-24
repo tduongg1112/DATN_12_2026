@@ -18,11 +18,12 @@ import type {
   PlantLogView,
   PlantsPage,
   ReminderSuggestion,
+  ReminderView,
   UpdatePlantDto,
 } from './dto/plant.dto.js';
 import { PlantLog } from './entities/plant-log.entity.js';
 import { Plant, type HealthStatus } from './entities/plant.entity.js';
-import { Reminder } from './entities/reminder.entity.js';
+import { Reminder, type ReminderType } from './entities/reminder.entity.js';
 import {
   allowedStatusChanges,
   canChangeStatus,
@@ -37,6 +38,11 @@ import {
   statusNotAllowed,
 } from './plant-messages.js';
 import { PlantReadsQuery } from './plant-reads.query.js';
+import {
+  addDays,
+  buildSuggestions,
+  REMINDER_TITLES,
+} from './reminder-rules.js';
 
 /** Thông tin một lượt chẩn đoán cần để áp vào cây (do `diagnosis` truyền vào). */
 export interface DiagnosisForPlant {
@@ -91,7 +97,7 @@ export class PlantsService {
     return { items, page, pageSize, total };
   }
 
-  /** P2 (BR-02, BR-03): cây mới "Chưa chẩn đoán". Gợi ý nhắc tưới, bón làm ở đợt 2. */
+  /** P2 (BR-02, BR-03): cây mới "Chưa chẩn đoán", kèm gợi ý nhắc tưới, bón (BR-18). */
   async create(
     userId: number,
     dto: CreatePlantDto,
@@ -112,7 +118,10 @@ export class PlantsService {
       await this.deleteQuietly(saved?.key);
       throw error;
     }
-    return { plant: await this.getDetail(userId, plant.id), suggestions: [] };
+    const suggestions = await this.suggestionsFor(this.plants.manager, plant, {
+      care: true,
+    });
+    return { plant: await this.getDetail(userId, plant.id), suggestions };
   }
 
   /** P3 (BR-05, BR-06). */
@@ -183,14 +192,7 @@ export class PlantsService {
       currentDisease,
       diagnoses,
       logs: await Promise.all(logs.map((l) => this.toLogView(l))),
-      reminders: reminders.map((r) => ({
-        id: r.id,
-        type: r.reminderType,
-        title: r.title,
-        nextRemindAt: r.nextRemindAt,
-        repeatDays: r.repeatDays,
-        source: r.source,
-      })),
+      reminders: reminders.map((r) => this.toReminderView(r)),
     };
   }
 
@@ -364,6 +366,7 @@ export class PlantsService {
 
     const next = healthFromResult(diagnosis.resultType);
     let suggestRecovered = false;
+    let suggestions: ReminderSuggestion[] = [];
     if (
       next &&
       (await this.reads.isLatestForPlant(
@@ -373,6 +376,13 @@ export class PlantsService {
         diagnosis.createdAt,
       ))
     ) {
+      // diagnosis BR-26: lượt bệnh được áp vào cây thì gợi ý nhắc kiểm tra lại.
+      if (diagnosis.resultType === 'DISEASE') {
+        suggestions = await this.suggestionsFor(manager, plant, {
+          care: false,
+          recheckDiagnosisId: diagnosis.id,
+        });
+      }
       suggestRecovered = shouldSuggestRecovered(
         plant.healthStatus,
         diagnosis.resultType,
@@ -389,8 +399,112 @@ export class PlantsService {
         healthStatus: plant.healthStatus,
       },
       suggestRecovered,
-      suggestions: [],
+      suggestions,
     };
+  }
+
+  // --- Nhắc việc (đợt 2: R1, R2; BR-14, 16, 18) --------------------------------------
+
+  /**
+   * Gợi ý nhắc cho một cây, trong giao dịch của bên gọi: tưới, bón theo chu kỳ của loại cây
+   * (`care`, BR-18) và kiểm tra lại theo `recheck_days` của bệnh của lượt (diagnosis BR-26).
+   * Bỏ loại mà cây đã có nhắc đang bật (BR-16).
+   */
+  async suggestionsFor(
+    manager: EntityManager,
+    plant: { id: number; cropId: number },
+    opts: { care: boolean; recheckDiagnosisId?: number },
+  ): Promise<ReminderSuggestion[]> {
+    const care = opts.care
+      ? await this.crops.careIntervals(plant.cropId)
+      : null;
+    const recheckDays =
+      opts.recheckDiagnosisId === undefined
+        ? null
+        : await this.reads.recheckDaysOf(manager, opts.recheckDiagnosisId);
+    return buildSuggestions(
+      {
+        wateringDays: care?.wateringDays,
+        fertilizingDays: care?.fertilizingDays,
+        recheckDays,
+      },
+      await this.activeReminderTypes(manager, plant.id),
+    );
+  }
+
+  /** R1 (BR-14): nhắc kiểm tra lại một lần sau 3, 7 hoặc 14 ngày, `source = USER`. */
+  async createRecheckReminder(
+    userId: number,
+    plantId: number,
+    days: number,
+  ): Promise<ReminderView> {
+    const plant = await this.requireOwn(userId, plantId);
+    const saved = await this.reminders.save(
+      this.reminders.create({
+        plantId: plant.id,
+        reminderType: 'RECHECK',
+        title: REMINDER_TITLES.RECHECK,
+        nextRemindAt: addDays(new Date(), days),
+        repeatDays: null,
+        source: 'USER',
+      }),
+    );
+    return this.toReminderView(saved);
+  }
+
+  /**
+   * R2 (BR-16, BR-18; diagnosis BR-26, 27): tính lại gợi ý tại thời điểm gọi và chỉ tạo loại
+   * vừa được gợi ý vừa được chọn, `source = SYSTEM`. Khoá dòng cây để bấm hai lần không tạo
+   * trùng. "Kiểm tra lại" lấy theo bệnh đang mắc (cây đang bệnh hoặc đang điều trị).
+   */
+  async createSuggestedReminders(
+    userId: number,
+    plantId: number,
+    types: ReminderSuggestion['type'][],
+  ): Promise<ReminderView[]> {
+    return this.plants.manager.transaction(async (manager) => {
+      const plant = await manager.getRepository(Plant).findOne({
+        where: { id: plantId, userId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!plant) throw plantNotFound();
+
+      const care = await this.crops.careIntervals(plant.cropId);
+      let recheckDays: number | null = null;
+      if (SHOWS_CURRENT_DISEASE.includes(plant.healthStatus)) {
+        const rows = await this.reads.diagnosesOf(plant.id);
+        recheckDays =
+          rows.find((r) => r.result_type === 'DISEASE' && r.disease_id !== null)
+            ?.disease_recheck_days ?? null;
+      }
+      const chosen = buildSuggestions(
+        {
+          wateringDays: care.wateringDays,
+          fertilizingDays: care.fertilizingDays,
+          recheckDays,
+        },
+        await this.activeReminderTypes(manager, plant.id),
+      ).filter((s) => types.includes(s.type));
+
+      const now = new Date();
+      const repo = manager.getRepository(Reminder);
+      const created: Reminder[] = [];
+      for (const s of chosen) {
+        created.push(
+          await repo.save(
+            repo.create({
+              plantId: plant.id,
+              reminderType: s.type,
+              title: REMINDER_TITLES[s.type],
+              nextRemindAt: addDays(now, s.days),
+              repeatDays: s.type === 'RECHECK' ? null : s.days,
+              source: 'SYSTEM',
+            }),
+          ),
+        );
+      }
+      return created.map((r) => this.toReminderView(r));
+    });
   }
 
   // --- Nội bộ ---------------------------------------------------------------------------
@@ -399,6 +513,28 @@ export class PlantsService {
     const plant = await this.plants.findOneBy({ id: plantId, userId });
     if (!plant) throw plantNotFound();
     return plant;
+  }
+
+  private async activeReminderTypes(
+    manager: EntityManager,
+    plantId: number,
+  ): Promise<Set<ReminderType>> {
+    const active = await manager.getRepository(Reminder).find({
+      select: { id: true, reminderType: true },
+      where: { plantId, isActive: true },
+    });
+    return new Set(active.map((r) => r.reminderType));
+  }
+
+  private toReminderView(r: Reminder): ReminderView {
+    return {
+      id: r.id,
+      type: r.reminderType,
+      title: r.title,
+      nextRemindAt: r.nextRemindAt,
+      repeatDays: r.repeatDays,
+      source: r.source,
+    };
   }
 
   private async toLogView(log: PlantLog): Promise<PlantLogView> {

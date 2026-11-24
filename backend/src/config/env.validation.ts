@@ -1,6 +1,7 @@
 import 'reflect-metadata';
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -168,6 +169,20 @@ export class EnvironmentVariables extends DatabaseEnvironment {
   @IsInt()
   @Min(1)
   LIBRARY_TRENDING_DAYS: number = 30;
+
+  // --- Job gửi nhắc việc (my_plants BR-15, TD-28) ---
+  /** TD-28: mỗi 5 phút. Dùng setInterval qua SchedulerRegistry, không cần thư viện cron. */
+  @IsInt()
+  @Min(1)
+  REMINDER_JOB_INTERVAL_MINUTES: number = 5;
+
+  /** `false` thì không tự chạy (vd khi test e2e gọi job trực tiếp). */
+  @IsBoolean()
+  @Transform(({ obj }: { obj: Record<string, unknown> }) => {
+    const raw = obj.REMINDER_JOB_ENABLED;
+    return raw === undefined || raw === true || String(raw) === 'true';
+  })
+  REMINDER_JOB_ENABLED: boolean = true;
 
   // --- Lưu ảnh (TD-01: dev lưu đĩa local, S3 khi deploy) ---
   @IsIn(STORAGE_DRIVERS)

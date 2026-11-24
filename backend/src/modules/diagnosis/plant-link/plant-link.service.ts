@@ -75,6 +75,12 @@ export class PlantLinkService {
           healthFromResult(diagnosis.resultType!) ?? 'NOT_DIAGNOSED',
         );
         await manager.update(Diagnosis, diagnosis.id, { plantId: plant.id });
+        // BR-27: gợi ý tưới, bón như khi tạo cây; lượt bệnh thì thêm kiểm tra lại (BR-26).
+        const suggestions = await this.plants.suggestionsFor(manager, plant, {
+          care: true,
+          recheckDiagnosisId:
+            diagnosis.resultType === 'DISEASE' ? diagnosis.id : undefined,
+        });
         return {
           plant: {
             id: plant.id,
@@ -82,7 +88,7 @@ export class PlantLinkService {
             healthStatus: plant.healthStatus,
           },
           suggestRecovered: false,
-          suggestions: [],
+          suggestions,
         };
       });
     } catch (error) {

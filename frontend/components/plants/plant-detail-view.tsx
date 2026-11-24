@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Sprout } from "lucide-react"
+import { Bell, Droplets, Sprout, Stethoscope } from "lucide-react"
 
 import { Card } from "@/components/ds/card-stack"
 import { ConfirmDialog } from "@/components/ds/confirm-dialog"
@@ -16,7 +16,11 @@ import { Button } from "@/components/ui/button"
 import { useApiRequest } from "@/hooks/use-api-request"
 import { CLIENT_ERRORS, isApiError } from "@/lib/api"
 import { plantsApi } from "@/lib/api/plants"
-import { DIAGNOSIS_TEXT, textLines } from "@/lib/diagnosis/text"
+import {
+  DIAGNOSIS_TEXT,
+  formatDiagnosisTime,
+  textLines,
+} from "@/lib/diagnosis/text"
 import {
   diagnosePlantHref,
   diseaseDetailHref,
@@ -24,10 +28,12 @@ import {
   plantEditHref,
   ROUTES,
 } from "@/lib/navigation"
+import { clearSuggestions, pendingSuggestions } from "@/lib/plants/follow-ups"
 import { formatDate, PLANTS_TEXT as T } from "@/lib/plants/text"
-import type { PlantDetail } from "@/lib/types/plants"
+import type { PlantDetail, ReminderView } from "@/lib/types/plants"
 
 import { CareNoteSheet, StatusSheet } from "./plant-sheets"
+import { PlantFollowUps, RecheckSheet } from "./reminder-sheets"
 import { PlantTimeline } from "./plant-timeline"
 
 /**
@@ -89,10 +95,13 @@ function DetailContent({
   onReload: () => void
 }) {
   const router = useRouter()
-  const [sheet, setSheet] = React.useState<"status" | "note" | "delete" | null>(
-    null
-  )
+  const [sheet, setSheet] = React.useState<
+    "status" | "note" | "recheck" | "delete" | null
+  >(null)
   const [deleting, setDeleting] = React.useState(false)
+  /** Gợi ý nhắc vừa nhận khi tạo cây (S2): mở "Gợi ý lịch nhắc" một lần. */
+  const [suggestions] = React.useState(() => pendingSuggestions(plant.id))
+  React.useEffect(() => clearSuggestions(plant.id), [plant.id])
 
   async function remove() {
     setDeleting(true)
@@ -184,6 +193,13 @@ function DetailContent({
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => setSheet("recheck")}
+            >
+              {T.REMIND_ME}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               nativeButton={false}
               render={<Link href={plantEditHref(plant.id)} />}
             >
@@ -239,7 +255,10 @@ function DetailContent({
             )}
           </Card>
         )}
-        <Card notch={!disease}>
+        {plant.reminders.length > 0 && (
+          <RemindersCard reminders={plant.reminders} notch={!disease} />
+        )}
+        <Card notch={!disease && plant.reminders.length === 0}>
           <h3 className="m-0 mb-4 type-h3">{T.TIMELINE}</h3>
           <PlantTimeline plant={plant} />
         </Card>
@@ -257,6 +276,18 @@ function DetailContent({
         onOpenChange={(open) => setSheet(open ? "note" : null)}
         onSaved={onReload}
       />
+      <RecheckSheet
+        plantId={plant.id}
+        open={sheet === "recheck"}
+        onOpenChange={(open) => setSheet(open ? "recheck" : null)}
+        onSaved={onReload}
+      />
+      {suggestions.length > 0 && (
+        <PlantFollowUps
+          link={{ plant, suggestRecovered: false, suggestions }}
+          onDone={onReload}
+        />
+      )}
       <ConfirmDialog
         open={sheet === "delete"}
         onOpenChange={(open) => setSheet(open ? "delete" : null)}
@@ -268,6 +299,55 @@ function DetailContent({
         busy={deleting}
       />
     </div>
+  )
+}
+
+const REMINDER_ICONS = {
+  RECHECK: Stethoscope,
+  WATERING: Droplets,
+  FERTILIZING: Sprout,
+  OTHER: Bell,
+} as const
+
+/** Card "Lịch nhắc" (OQ-49): nhắc đang bật, chỉ xem. */
+function RemindersCard({
+  reminders,
+  notch,
+}: {
+  reminders: ReminderView[]
+  notch: boolean
+}) {
+  return (
+    <Card notch={notch}>
+      <h3 className="m-0 mb-3 type-h3">{T.REMINDERS}</h3>
+      <ul className="m-0 grid list-none p-0">
+        {reminders.map((r) => {
+          const Icon = REMINDER_ICONS[r.type]
+          return (
+            <li
+              key={r.id}
+              className="flex items-center gap-3 border-t border-dashed border-line py-3 first:border-0 first:pt-0 last:pb-0"
+            >
+              <span
+                className="icon-tile icon-tile--neutral size-10 shrink-0"
+                aria-hidden
+              >
+                <Icon size={18} />
+              </span>
+              <span className="grid min-w-0 gap-0.5">
+                <span className="type-title">
+                  {r.title}
+                  {r.repeatDays ? ` · ${T.EVERY(r.repeatDays)}` : ""}
+                </span>
+                <span className="text-ink-secondary type-caption">
+                  {T.NEXT_AT(formatDiagnosisTime(r.nextRemindAt))}
+                </span>
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </Card>
   )
 }
 

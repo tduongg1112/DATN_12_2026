@@ -260,3 +260,25 @@ export const SAMPLE_CROP_CARE_GUIDES: ReadonlyArray<{
     ),
   },
 ];
+
+/*
+ * ===================== CHU KỲ CHĂM SÓC, NGÀY KIỂM TRA LẠI MẪU (OQ-52) =====================
+ * Claude soạn, Dương chốt 23/11. CHỈ DÙNG KHI DEV, để thử gợi ý nhắc (my_plants BR-18,
+ * diagnosis BR-26). Giá trị thật: docs/_shared/real_data_needed.md (B4, B7).
+ * ===========================================================================================
+ */
+export const SAMPLE_CROP_INTERVALS: ReadonlyArray<{
+  cropCode: string;
+  /** null: không gợi ý (lúa là ruộng nước). */
+  wateringDays: number | null;
+  fertilizingDays: number;
+}> = [
+  { cropCode: 'RICE', wateringDays: null, fertilizingDays: 20 },
+  { cropCode: 'CORN', wateringDays: 3, fertilizingDays: 21 },
+  { cropCode: 'TOMATO', wateringDays: 2, fertilizingDays: 14 },
+  { cropCode: 'CHILI', wateringDays: 2, fertilizingDays: 14 },
+  { cropCode: 'POTATO', wateringDays: 3, fertilizingDays: 14 },
+];
+
+/** Số ngày nên kiểm tra lại cho mọi bệnh mẫu. */
+export const SAMPLE_RECHECK_DAYS = 7;

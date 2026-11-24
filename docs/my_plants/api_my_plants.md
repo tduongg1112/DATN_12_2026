@@ -3,7 +3,7 @@
 > **Trạng thái:** REVIEWED (build-first 23/11, review lại ở giai đoạn test) · Sinh từ `specs_my_plants.md` v0.2 và phần hoãn của `specs_diagnosis.md` (BR-22 → BR-27), `specs_history.md` (BR-06) · Định dạng response và lỗi theo TD-05 (đã chốt)
 > Câu có trong specs hoặc C4 được chép nguyên văn. Câu và giá trị **Claude soạn** (nguồn không có) đánh dấu ✎, Dương đã duyệt ngày 23/11 (OQ-45 → OQ-52). Điểm kỹ thuật: TD-28, TD-29 (phương án A), TD-30 (chốt 23/11).
 > Dữ liệu đang tạm (chu kỳ tưới, bón, `recheck_days`, ngưỡng…) cần thay bằng dữ liệu thật: `docs/_shared/real_data_needed.md`.
-> **Code:** đợt 1 DONE (build-first, 23/11): `backend/src/modules/plants/`, `diagnosis/plant-link/`, test `test/plants.e2e-spec.ts`; frontend `components/plants/`. Đợt 2 chưa làm.
+> **Code:** DONE (build-first). Đợt 1 (23/11): `backend/src/modules/plants/`, `diagnosis/plant-link/`, test `test/plants.e2e-spec.ts`; frontend `components/plants/`. Đợt 2 (24/11): `plants/reminder.job.ts`, `reminder-rules.ts`, `notifications.controller.ts`, test `test/reminders.e2e-spec.ts`; frontend `components/plants/reminder-sheets.tsx`, `components/notifications/`, `components/layout/notification-bell.tsx`.
 
 ## Phạm vi và chia đợt (TD-30)
 
@@ -239,7 +239,7 @@ Chỉ áp khi lượt này **mới hơn** mọi lượt khác đang gắn với 
 
 ### J1. Job gửi nhắc (TD-28)
 
-- Chạy theo `REMINDER_CRON` (mặc định mỗi 5 phút). Mỗi lần: lấy các `reminders` `is_active` và `next_remind_at <= now()` (chỉ mục `ix_reminders_due`), khoá dòng `FOR UPDATE SKIP LOCKED`, mỗi lần tối đa 100 dòng.
+- Chạy mỗi `REMINDER_JOB_INTERVAL_MINUTES` phút (mặc định 5); `REMINDER_JOB_ENABLED=false` để tắt. Cài bằng `setInterval` đăng ký ở `SchedulerRegistry` của `@nestjs/schedule`, không thêm thư viện `cron` (24/11, thay cho khoá `REMINDER_CRON` dự kiến). Mỗi lần: lấy các `reminders` `is_active` và `next_remind_at <= now()` (chỉ mục `ix_reminders_due`), khoá dòng `FOR UPDATE SKIP LOCKED`, mỗi lần tối đa 100 dòng.
 - Với mỗi nhắc, trong một giao dịch: tạo một `notifications` cho chủ cây (`reminder_id` = nhắc, nội dung theo `template_my_plants.md`), đặt `last_sent_at = now()`. Nhắc lặp: cộng `repeat_days` cho tới khi `next_remind_at > now()` (máy tắt lâu thì chỉ gửi **một** thông báo, không dồn). Nhắc một lần: `is_active = false` (BR-15).
 - Chỉ thông báo trong ứng dụng (OQ-09).
 
@@ -255,7 +255,7 @@ Chỉ áp khi lượt này **mới hơn** mọi lượt khác đang gắn với 
 | OQ-50 | Cảnh báo khác loại cây khi gắn lượt vào cây (diagnosis BR-23) | Cảnh báo ngay trong hộp chọn cây; vẫn cho lưu |
 | OQ-51 | Câu chữ Claude soạn cho `my_plants` và nội dung thông báo nhắc | Danh sách ở `design/screens/my_plants.md` và `template_my_plants.md` |
 | OQ-52 | Dữ liệu dev chưa có chu kỳ tưới, bón của loại cây và `recheck_days` của bệnh, nên đợt 2 không có gợi ý nào để thử | Claude soạn giá trị mẫu trong seed dev, chỉ điền khi cột đang trống (như OQ-36, OQ-41) |
-| TD-28 | Tần suất job nhắc việc (specs mục 6: phải hỏi) và cách gửi | Mỗi 5 phút, cấu hình `REMINDER_CRON`; `FOR UPDATE SKIP LOCKED`; nhắc lặp quá hạn nhiều chu kỳ chỉ gửi một thông báo |
+| TD-28 | Tần suất job nhắc việc (specs mục 6: phải hỏi) và cách gửi | Mỗi 5 phút, cấu hình `REMINDER_JOB_INTERVAL_MINUTES` (code 24/11, thay cho `REMINDER_CRON` để không thêm thư viện `cron`); `FOR UPDATE SKIP LOCKED`; nhắc lặp quá hạn nhiều chu kỳ chỉ gửi một thông báo |
 | TD-29 | P1, P3 cần đọc `diagnoses` (ngày chẩn đoán gần nhất, bệnh đang mắc, dòng thời gian) trong khi `plants` không được import `diagnosis` (TD-25) | **A (khuyến nghị):** ngoại lệ thứ ba của ranh giới mô-đun như TD-24: `plants` có một truy vấn **chỉ đọc** `diagnoses` qua `DataSource`. **B:** giao diện gọi thêm `GET /diagnoses?plantId=` và một endpoint tóm tắt của `diagnosis`, rồi tự ghép |
 | TD-30 | Feature lớn (UC04 + NOTI + phần hoãn của `diagnosis`, `history`) | Code hai đợt như bảng đầu file, mỗi đợt duyệt kế hoạch riêng |
 
@@ -269,6 +269,16 @@ Chỉ áp khi lượt này **mới hơn** mọi lượt khác đang gắn với 
 | D1 có `plantId` | Cây bị xoá trong lúc chờ AI (`plant_id` đã thành NULL) thì bỏ qua phần gắn cây, lượt vẫn `COMPLETED`, `plantLink = null` |
 | Ngày không sau hôm nay | Backend cho lệch một ngày so với ngày UTC của máy chủ (người dùng ở UTC+7); giao diện chặn chính xác bằng `max` = hôm nay theo giờ máy |
 | Câu lỗi trường | Tên gọi, nội dung ghi chú dùng một ràng buộc chọn đúng câu (thiếu hay quá dài), tránh hai câu cùng lúc |
+
+## Ghi chú cài đặt đợt 2 (24/11)
+
+| Mục | Cách làm |
+|---|---|
+| Gợi ý `RECHECK` khi gắn lượt (A1, D1) | Chỉ khi lượt bệnh **được áp** vào cây, tức là lượt mới nhất của cây (OQ-48). Gắn lượt bệnh cũ từ lịch sử thì không gợi ý |
+| R2 tính lại gợi ý | Khoá dòng cây trong giao dịch, nên bấm hai lần không tạo trùng. "Kiểm tra lại" lấy `recheck_days` của bệnh đang mắc (cây "Đang có bệnh" hoặc "Đang điều trị"); cây khác thì không tạo |
+| J1 | Mỗi vòng lấy **một** nhắc đến hạn `FOR UPDATE OF r SKIP LOCKED` trong một giao dịch, lặp tối đa 100 lần. Lần chạy trước chưa xong thì lần sau bỏ qua |
+| N1 → N4 | N1 `pageSize` mặc định 20, tối đa 50. N3 đánh dấu thông báo đã đọc rồi vẫn trả 204 |
+| Giao diện | Chuông chỉ gọi API khi có phiên (trang `/dev/*` dùng chung khung trang mà không đăng nhập). Sau khi gắn lượt hoặc tạo cây: hỏi "Cây đã khỏi bệnh?" trước, rồi "Gợi ý lịch nhắc" |
 
 ## Nợ kỹ thuật
 
@@ -284,3 +294,4 @@ Chỉ áp khi lượt này **mới hơn** mọi lượt khác đang gắn với 
 | 23/11/2026 | 0.1 | Sinh từ specs my_plants v0.2, diagnosis v0.3, history v0.3 (build-first) | Claude |
 | 23/11/2026 | 0.2 | Dương duyệt: chốt OQ-45 (sửa: phân trang 10 cây), OQ-46 → OQ-52, TD-28, TD-29 (A), TD-30. Chuyển REVIEWED | Claude theo quyết định của Dương |
 | 23/11/2026 | 0.3 | Code xong đợt 1: thêm `allowedStatusChanges` vào `PlantDetail`, mục "Ghi chú cài đặt đợt 1" | Claude |
+| 24/11/2026 | 0.4 | Code xong đợt 2: job dùng `REMINDER_JOB_INTERVAL_MINUTES`, `REMINDER_JOB_ENABLED` thay cho `REMINDER_CRON`; mục "Ghi chú cài đặt đợt 2" | Claude |

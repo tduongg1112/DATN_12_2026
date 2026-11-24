@@ -8,12 +8,24 @@ import type { Reminder } from './entities/reminder.entity.js';
 import type { PlantReadsQuery } from './plant-reads.query.js';
 import { PlantsService } from './plants.service.js';
 
-function setup(o: { plant?: Partial<Plant> | null; latest?: boolean }) {
+function setup(o: {
+  plant?: Partial<Plant> | null;
+  latest?: boolean;
+  recheckDays?: number | null;
+  activeTypes?: string[];
+}) {
   const plant =
     o.plant === null
       ? null
       : { id: 4, name: 'Cây A', healthStatus: 'DISEASED', ...o.plant };
-  const repo = { findOne: vi.fn().mockResolvedValue(plant) };
+  const repo = {
+    findOne: vi.fn().mockResolvedValue(plant),
+    find: vi
+      .fn()
+      .mockResolvedValue(
+        (o.activeTypes ?? []).map((reminderType) => ({ reminderType })),
+      ),
+  };
   const manager = {
     getRepository: () => repo,
     update: vi.fn().mockResolvedValue({}),
@@ -21,6 +33,7 @@ function setup(o: { plant?: Partial<Plant> | null; latest?: boolean }) {
   };
   const reads = {
     isLatestForPlant: vi.fn().mockResolvedValue(o.latest ?? true),
+    recheckDaysOf: vi.fn().mockResolvedValue(o.recheckDays ?? null),
   };
   const service = new PlantsService(
     {
@@ -96,6 +109,42 @@ describe('PlantsService.applyDiagnosis (diagnosis BR-25, Bảng 4.8, OQ-48)', ()
       suggestRecovered: false,
     });
     expect(s.manager.update).not.toHaveBeenCalled();
+  });
+
+  it('lượt bệnh được áp: gợi ý kiểm tra lại sau recheck_days (diagnosis BR-26)', async () => {
+    const s = setup({ plant: { healthStatus: 'HEALTHY' }, recheckDays: 7 });
+    const link = await s.service.applyDiagnosis(
+      s.manager as unknown as EntityManager,
+      4,
+      diagnosis('DISEASE'),
+    );
+    expect(link?.suggestions).toEqual([{ type: 'RECHECK', days: 7 }]);
+    expect(s.reads.recheckDaysOf).toHaveBeenCalledWith(s.manager, 15);
+  });
+
+  it('cây đã có nhắc kiểm tra lại đang bật: không gợi ý trùng (BR-16)', async () => {
+    const s = setup({ recheckDays: 7, activeTypes: ['RECHECK'] });
+    const link = await s.service.applyDiagnosis(
+      s.manager as unknown as EntityManager,
+      4,
+      diagnosis('DISEASE'),
+    );
+    expect(link?.suggestions).toEqual([]);
+  });
+
+  it('lượt khoẻ hoặc lượt cũ: không gợi ý kiểm tra lại', async () => {
+    for (const [result, latest] of [
+      ['HEALTHY', true],
+      ['DISEASE', false],
+    ] as const) {
+      const s = setup({ recheckDays: 7, latest });
+      const link = await s.service.applyDiagnosis(
+        s.manager as unknown as EntityManager,
+        4,
+        diagnosis(result),
+      );
+      expect(link?.suggestions).toEqual([]);
+    }
   });
 
   it('UNCERTAIN không cần kiểm tra lượt mới nhất', async () => {

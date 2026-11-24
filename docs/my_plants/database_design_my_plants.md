@@ -1,7 +1,8 @@
 # Database design — Quản lý cây trồng của tôi (`my_plants`)
 
 > **Trạng thái:** REVIEWED (build-first 23/11, review lại ở giai đoạn test) · Bảng và cột định nghĩa ở `docs/_shared/data_model.md`. File này **chỉ mô tả cách feature dùng chúng**, không định nghĩa lại.
-> **Code:** đợt 1 DONE (23/11). Q1 → Q3, Q7 ở `plants/plant-reads.query.ts`; Q4 → Q6, Q9 ở `plants/plants.service.ts`; Q8 ở `diagnosis/plant-link/plant-link.service.ts`.
+> **Code:** DONE. Đợt 1 (23/11); đợt 2 (24/11): Q10 ở `plants/reminder.job.ts`, Q11 và R1, R2 ở `plants.service.ts`, Q12 ở `notifications.service.ts`; seed mẫu OQ-52 đã chạy.
+> Đợt 1: Q1 → Q3, Q7 ở `plants/plant-reads.query.ts`; Q4 → Q6, Q9 ở `plants/plants.service.ts`; Q8 ở `diagnosis/plant-link/plant-link.service.ts`.
 > Không thêm bảng, cột hay migration. Entity đã có: `plants/entities/plant.entity.ts`, `plant-log.entity.ts`, `reminder.entity.ts`, `notification.entity.ts`. Đã có các khoá ngoại cần cho BR-11 (CASCADE, SET NULL) từ migration đầu tiên.
 
 ## 1. Bảng sử dụng
@@ -52,7 +53,7 @@ Q1 → Q3 đọc bảng của mô-đun `diagnosis` từ mô-đun `plants`: TD-29
 ## 4. Migration và seed
 
 - Không có migration mới.
-- **Seed dev (OQ-52, chốt 23/11, đợt 2):** điền mẫu khi cột đang trống. Giá trị thật: `docs/_shared/real_data_needed.md`.
+- **Seed dev (OQ-52, chốt 23/11, đợt 2):** điền mẫu khi cột đang trống (`SAMPLE_CROP_INTERVALS`, `SAMPLE_RECHECK_DAYS` trong `seeds/dev-sample-content.ts`; đã chạy `seed:dev` 24/11). Giá trị thật: `docs/_shared/real_data_needed.md`.
   - `crops.watering_interval_days`, `fertilizing_interval_days`: Lúa —/20, Ngô 3/21, Cà chua 2/14, Ớt 2/14, Khoai tây 3/14 (ngày). Lúa không gợi ý tưới vì là ruộng nước.
   - `diseases.recheck_days` của 6 bệnh mẫu: 7 ngày.
 
@@ -74,3 +75,4 @@ Q1 → Q3 đọc bảng của mô-đun `diagnosis` từ mô-đun `plants`: TD-29
 | 23/11/2026 | 0.1 | Sinh từ specs my_plants v0.2 (build-first) | Claude |
 | 23/11/2026 | 0.2 | Dương duyệt (Q1 phân trang 10 cây). Chuyển REVIEWED | Claude theo quyết định của Dương |
 | 23/11/2026 | 0.3 | Code xong đợt 1 | Claude |
+| 24/11/2026 | 0.4 | Code xong đợt 2. Q10 cài bằng vòng lặp lấy một nhắc mỗi giao dịch (`LIMIT 1 FOR UPDATE OF r SKIP LOCKED`), tối đa 100 lần mỗi lần chạy | Claude |
