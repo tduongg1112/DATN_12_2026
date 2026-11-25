@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { StorageService } from '../../../common/storage/storage.service.js';
 import type { Severity } from '../../catalog/entities/disease.entity.js';
-import { escapeLike } from '../../catalog/library/library.service.js';
+import { escapeLike } from '../../../common/sql/escape-like.js';
 import { diagnosisNotFound } from '../diagnosis-errors.js';
 import { DiagnosisPrediction } from '../entities/diagnosis-prediction.entity.js';
 import { Diagnosis, type ResultType } from '../entities/diagnosis.entity.js';

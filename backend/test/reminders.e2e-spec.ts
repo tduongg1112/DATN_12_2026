@@ -19,7 +19,7 @@ import { ReminderJob } from '../src/modules/plants/reminder.job.js';
  * - Tắt job tự chạy (`REMINDER_JOB_ENABLED=false`), gọi `ReminderJob.run(now)` trực tiếp.
  *   Job xử lý mọi nhắc đến hạn trong CSDL, nên test chỉ kiểm tra dữ liệu của chính nó.
  * - Dữ liệu riêng: loại cây A (tưới 2, bón 14 ngày), B (không có chu kỳ); bệnh có và không
- *   có `recheck_days`; 3 người dùng. Mang tiền tố của lần chạy, xoá ở afterAll.
+ *   có `recheck_days`; 2 người dùng và 1 ADMIN. Mang tiền tố của lần chạy, xoá ở afterAll.
  */
 const RUN = Date.now();
 const P = `E2E-REM ${RUN}`;
@@ -60,6 +60,7 @@ describe('Reminders & notifications (e2e)', () => {
 
   const user = { id: 0, token: '' };
   const other = { id: 0, token: '' };
+  const admin = { id: 0, token: '' };
   const crop = { a: 0, b: 0 };
   const label = { healthyA: 0, mold: 0, noRecheck: 0 };
 
@@ -185,6 +186,18 @@ describe('Reminders & notifications (e2e)', () => {
 
     Object.assign(user, await register('user'));
     Object.assign(other, await register('other'));
+    // ADMIN: đổi vai trò rồi đăng nhập lại để access token mang role ADMIN.
+    admin.id = (await register('admin')).id;
+    await db.query(`UPDATE users SET role = 'ADMIN' WHERE id = $1`, [admin.id]);
+    admin.token = (
+      await request(http)
+        .post(api('/auth/login'))
+        .send({
+          email: `${EMAIL_PREFIX}-admin@example.test`,
+          password: 'matkhau1',
+        })
+        .expect(200)
+    ).body.accessToken as string;
 
     const insertCrop = async (
       key: string,
@@ -226,7 +239,7 @@ describe('Reminders & notifications (e2e)', () => {
 
   afterAll(async () => {
     if (db) {
-      const users = [user.id, other.id].filter(Boolean);
+      const users = [user.id, other.id, admin.id].filter(Boolean);
       const crops = [crop.a, crop.b].filter(Boolean);
       const run = (sql: string, params: unknown[]) =>
         db.query(sql, params).catch(() => undefined);
@@ -539,6 +552,89 @@ describe('Reminders & notifications (e2e)', () => {
         ),
       ).toBe(false);
       expect(res.body.total).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  // --- ADMIN dùng chức năng người dùng ----------------------------------------------
+
+  describe('ADMIN dùng nhắc việc và thông báo như USER (OQ-22)', () => {
+    it('R1, R2 trên cây của mình; cây của người khác thì 404', async () => {
+      const mine = await insertPlant('cây của ADMIN', { userId: admin.id });
+      await post(
+        `/plants/${mine}/reminders/recheck`,
+        { days: 7 },
+        admin.token,
+      ).expect(201);
+      const suggested = await post(
+        `/plants/${mine}/reminders/suggested`,
+        { types: ['WATERING'] },
+        admin.token,
+      ).expect(201);
+      expect(suggested.body).toMatchObject([{ type: 'WATERING' }]);
+
+      const theirs = await insertPlant('cây của USER');
+      await post(
+        `/plants/${theirs}/reminders/recheck`,
+        { days: 3 },
+        admin.token,
+      ).expect(404);
+      await post(
+        `/plants/${theirs}/reminders/suggested`,
+        { types: ['WATERING'] },
+        admin.token,
+      ).expect(404);
+    });
+
+    it('N1 → N4: chỉ thông báo của mình; thông báo của USER thì 404', async () => {
+      const mine = await insertPlant('ADMIN nhận nhắc', { userId: admin.id });
+      await insertReminder(mine, {
+        type: 'RECHECK',
+        nextAt: new Date(Date.now() - 60_000),
+      });
+      const theirsPlant = await insertPlant('USER nhận nhắc');
+      const theirsReminder = await insertReminder(theirsPlant, {
+        type: 'RECHECK',
+        nextAt: new Date(Date.now() - 60_000),
+      });
+      await job.run(new Date());
+
+      const list = await get('/notifications?pageSize=50', admin.token).expect(
+        200,
+      );
+      const items = list.body.items as { id: number; plantId: number | null }[];
+      expect(items.filter((n) => n.plantId === mine)).toHaveLength(1);
+      expect(items.some((n) => n.plantId === theirsPlant)).toBe(false);
+      expect(
+        (await get('/notifications/unread-count', admin.token).expect(200)).body
+          .count,
+      ).toBeGreaterThanOrEqual(1);
+
+      const [theirNotice] = await db.query<{ id: number }[]>(
+        `SELECT id FROM notifications WHERE reminder_id = $1`,
+        [theirsReminder],
+      );
+      await post(
+        `/notifications/${Number(theirNotice.id)}/read`,
+        {},
+        admin.token,
+      ).expect(404);
+
+      // Kiểm tra theo thông báo của test, không theo tổng: file e2e chẩn đoán chạy song song
+      // có thể gửi thông báo nhãn lạ cho mọi ADMIN, kể cả ADMIN tạm của file này.
+      await post('/notifications/read-all', {}, admin.token).expect(204);
+      const after = await get('/notifications?pageSize=50', admin.token).expect(
+        200,
+      );
+      expect(
+        (after.body.items as { plantId: number | null; isRead: boolean }[])
+          .filter((n) => n.plantId === mine)
+          .map((n) => n.isRead),
+      ).toEqual([true]);
+      const [theirs] = await db.query<{ is_read: boolean }[]>(
+        `SELECT is_read FROM notifications WHERE id = $1`,
+        [Number(theirNotice.id)],
+      );
+      expect(theirs.is_read).toBe(false);
     });
   });
 });

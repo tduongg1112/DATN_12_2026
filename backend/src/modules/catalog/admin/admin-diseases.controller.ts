@@ -16,10 +16,8 @@ import { Roles } from '../../../common/decorators/roles.decorator.js';
 import type { DiseaseCard } from '../library/dto/library.dto.js';
 import { LibraryService } from '../library/library.service.js';
 import { AdminDiseasesService } from './admin-diseases.service.js';
-import {
-  DiseaseImagesInterceptor,
-  type UploadedImageFile,
-} from './catalog-upload.interceptor.js';
+import { DiseaseImagesInterceptor } from './catalog-upload.interceptor.js';
+import type { UploadedImageFile } from '../../../common/storage/image-upload.interceptor.js';
 import {
   CatalogIdParam,
   CreateDiseaseDto,

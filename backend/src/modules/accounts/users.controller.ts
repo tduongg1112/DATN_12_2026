@@ -12,10 +12,8 @@ import {
 import type { AuthUser } from '../../common/auth/auth-user.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
-import {
-  AvatarUploadInterceptor,
-  type UploadedImage,
-} from './avatar-upload.interceptor.js';
+import { AvatarUploadInterceptor } from './avatar-upload.interceptor.js';
+import type { UploadedImageFile } from '../../common/storage/image-upload.interceptor.js';
 import {
   ChangePasswordDto,
   UpdateProfileDto,
@@ -41,7 +39,7 @@ export class UsersController {
   updateMe(
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateProfileDto,
-    @UploadedFile() avatar?: UploadedImage,
+    @UploadedFile() avatar?: UploadedImageFile,
   ): Promise<UserProfile> {
     return this.users.updateProfile(user.id, dto, avatar?.buffer);
   }

@@ -5,18 +5,7 @@ import type { Crop } from '../entities/crop.entity.js';
 import type { DiseaseImage } from '../entities/disease-image.entity.js';
 import type { Disease } from '../entities/disease.entity.js';
 import type { DiseaseTrendsQuery } from './disease-trends.query.js';
-import {
-  diseaseNotFound,
-  escapeLike,
-  LibraryService,
-} from './library.service.js';
-
-describe('escapeLike (L2 tìm theo tên)', () => {
-  it('thoát %, _ và \\ để chỉ tìm đúng chữ người dùng gõ', () => {
-    expect(escapeLike('mốc sương')).toBe('mốc sương');
-    expect(escapeLike('50%_a\\b')).toBe('50\\%\\_a\\\\b');
-  });
-});
+import { diseaseNotFound, LibraryService } from './library.service.js';
 
 describe('diseaseNotFound (L3, BR-01)', () => {
   it('404 DISEASE_NOT_FOUND với câu dự phòng OQ-29', () => {

@@ -12,10 +12,8 @@ import {
 } from '@nestjs/common';
 import { Roles } from '../../../common/decorators/roles.decorator.js';
 import { AdminCropsService } from './admin-crops.service.js';
-import {
-  CropImageInterceptor,
-  type UploadedImageFile,
-} from './catalog-upload.interceptor.js';
+import { CropImageInterceptor } from './catalog-upload.interceptor.js';
+import type { UploadedImageFile } from '../../../common/storage/image-upload.interceptor.js';
 import {
   CatalogIdParam,
   CropFormDto,

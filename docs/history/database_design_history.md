@@ -23,7 +23,7 @@ Các bảng của mô-đun khác chỉ được **đọc** qua quan hệ entity 
 | # | Mục đích | Truy vấn | Chỉ mục |
 |---|---|---|---|
 | Q1 | H1: danh sách | `diagnoses d JOIN crops c ON c.id = d.crop_id LEFT JOIN plants pl ON pl.id = d.plant_id JOIN diagnosis_predictions p ON p.diagnosis_id = d.id AND p.rank_no = 1 JOIN model_labels ml ON ml.id = p.label_id LEFT JOIN diseases ds ON ds.id = ml.disease_id WHERE d.user_id = :me AND d.status = 'COMPLETED' AND d.deleted_at IS NULL` + bộ lọc, `ORDER BY d.created_at DESC, d.id DESC`, `OFFSET/LIMIT` | `ix_diagnoses_user_created` (`user_id, created_at DESC WHERE deleted_at IS NULL`) |
-| Q1a | Bộ lọc của Q1 (BR-03) | `cropId`: `d.crop_id = :cropId`. `resultType`: `d.result_type = :type`. `from`: `d.created_at >= :from`. `to`: `d.created_at < :to`. `q`: `d.result_type = 'DISEASE' AND ds.name ILIKE :pattern ESCAPE '\'` (OQ-43; thoát `%`, `_`, `\` như `escapeLike` của thư viện) | Như Q1 |
+| Q1a | Bộ lọc của Q1 (BR-03) | `cropId`: `d.crop_id = :cropId`. `resultType`: `d.result_type = :type`. `from`: `d.created_at >= :from`. `to`: `d.created_at < :to`. `q`: `d.result_type = 'DISEASE' AND ds.name ILIKE :pattern ESCAPE '\'` (OQ-43; thoát `%`, `_`, `\` bằng `escapeLike` dùng chung ở `common/sql/`) | Như Q1 |
 | Q2 | H1: tổng số | Cùng điều kiện Q1, `COUNT(*)` | Như Q1 |
 | Q3 | D2: tên cây | Thêm quan hệ `plant` vào truy vấn Q5 của `diagnosis` (`relations: { crop: true, plant: true }`) | `pk_plants` |
 | Q4 | H2: xoá mềm (BR-08, BR-09) | Một giao dịch: `UPDATE diagnoses SET deleted_at = now() WHERE id = ANY(:ids) AND user_id = :me AND status = 'COMPLETED' AND deleted_at IS NULL`. Số dòng đổi khác số id (sau khi gộp trùng) thì huỷ giao dịch, trả 404 | `pk_diagnoses` |

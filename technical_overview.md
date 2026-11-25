@@ -43,7 +43,7 @@ Mọi quan hệ hợp thành nằm gọn trong một mô-đun. Giữa các mô-�
 
 | Thành phần | Phiên bản | Ghi chú |
 |---|---|---|
-| Next.js (App Router) | 16.4.3 | **Đọc `frontend/AGENTS.md`**: API khác kiến thức cũ, tài liệu ở `node_modules/next/dist/docs/` |
+| Next.js (App Router) | 16.4.6 | **Đọc `frontend/AGENTS.md`**: API khác kiến thức cũ, tài liệu ở `node_modules/next/dist/docs/` |
 | React / React DOM | 19.3.1 | |
 | Tailwind CSS | ^4 (`@tailwindcss/postcss`) | Cấu hình trong CSS, không có `tailwind.config` |
 | shadcn/ui | ^4.23.0, style `base-nova` | Xây trên `@base-ui/react` ^1.9.0, **không phải Radix** |
@@ -115,7 +115,7 @@ Dự kiến viết bằng Python, PyTorch, chuyển sang ONNX/TFLite (Đề cư�
 | `GET /labels` | Danh sách `class_code` của phiên bản mô hình đang dùng, để đối chiếu với `model_labels` khi đổi mô hình. Dạng JSON chưa chốt với nhóm AI; `HttpAiClient` tạm nhận mảng chuỗi |
 | Thời gian chờ | 15 giây (Chương 4 UC02 ngoại lệ 10.1, ghi "define sau"). Để trong cấu hình |
 | Tiền xử lý | AI service resize về 224×224 và chuẩn hoá giống hệt lúc huấn luyện. Ứng dụng chỉ cắt vuông |
-| Ngưỡng độ tin cậy | **Một ngưỡng chung**, để trong cấu hình backend. Giá trị chờ nhóm AI (OQ-06) |
+| Ngưỡng độ tin cậy | **Một ngưỡng chung**, để trong cấu hình backend (`AI_CONFIDENCE_THRESHOLD`). Tạm mặc định 0.6 (TD-26); giá trị thật chờ nhóm AI (OQ-06) |
 | Ánh xạ | Backend tra `class_code` trong `model_labels` (`is_active = true`). Không tìm thấy thì coi là lỗi cấu hình: `FAILED`, ghi log ERROR và gửi thông báo trong ứng dụng cho mọi ADMIN (OQ-26) |
 
 Phía backend, mọi lời gọi AI service đi qua một interface client duy nhất, chọn bản cài theo `AI_MODE` (`mock` hoặc `http`, TD-04). Khi dev và test backend thì dùng mock; khi nghiệm thu thì dùng mô hình thật cùng nhóm AI. `crop_code` luôn được gửi, vì người dùng bắt buộc chọn loại cây trước khi chẩn đoán (OQ-05, chốt 22/11). Mô hình chạy trên server (OQ-18, chốt 22/11).
@@ -180,7 +180,7 @@ Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. V�
 | F5 | `lib/auth/`: access token trong bộ nhớ, khôi phục phiên bằng refresh khi mở app, `RequireAuth` (chuyển tới `/login?next=…`), `postLoginRedirect` (ADMIN về `/admin`) | C4 UC01, OQ-22 |
 | F6 | `lib/device/`: `CameraService` + bản web (`getUserMedia`), nén ảnh (cạnh dài 1600px, JPEG 0.85, đề xuất), kiểm tra JPG/PNG ≤ 10 MB | design/06 |
 | F7 | Trang `/dev/*` (`app/dev/**/page.dev.tsx`) chỉ có khi `next dev` nhờ `pageExtensions` theo phase trong `next.config.ts`; bản build production không chứa chúng. Dùng để xem thành phần và khung trang không cần đăng nhập | |
-| F8 | Next.js 16.4.3 báo có lỗ hổng bảo mật đã công bố (npm advisories); `next build`/`next dev` đôi khi dừng lần đầu để nhắc. Chưa nâng cấp, chờ Dương quyết | |
+| F8 | ~~Next.js 16.4.3 báo có lỗ hổng bảo mật đã công bố~~ Đã nâng lên 16.4.6 (commit `ff029cb`) | |
 
 **Tài liệu:**
 
@@ -208,6 +208,8 @@ Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. V�
 | TD-11 | Mô tả màn hình đặt ở `../design/screens/` (ngoài git) | Đã chốt | Bước 6 (`/gen-docs` và các skill đã cập nhật 21/11) |
 | TD-12 | Access token trong bộ nhớ; refresh token trong cookie httpOnly, SameSite=Lax, path `/api/v1/auth` | Đã chốt | — |
 | TD-13 | Google OAuth làm ngay trong `auth` | Đã chốt | — |
-| TD-14 | Cột ảnh `*_url` lưu khoá đối tượng S3 hay URL đầy đủ | Chưa chốt | Entity đầu tiên có cột ảnh (auth: `avatar_url`) |
+| TD-14 | Cột ảnh `*_url` lưu khoá đối tượng; ảnh ngoài (ảnh Google) lưu URL `https://…`; đổi ra URL qua `StorageService.resolveUrl`, nên đổi sang S3 hoặc Cloudinary không phải sửa dữ liệu | Đã chốt 21/11 | — |
+
+TD-15 → TD-35 (phát sinh khi làm từng feature) ghi ở `docs/_shared/open_questions.md` mục B. Các mục mở rộng ranh giới mô-đun (TD-24, TD-29, TD-31) đã chép vào be-coding-rules mục 2. Còn chờ duyệt: TD-17, TD-19, TD-20, TD-34, TD-35.
 
 Dependency mới đã được duyệt về nguyên tắc, tên gói và phiên bản cụ thể hỏi lại khi cài: SDK S3 (TD-01), client Redis (TD-03), `@nestjs/swagger` (TD-05), thư viện Google OAuth (TD-13), có thể thêm `cookie-parser` (TD-12).

@@ -33,8 +33,8 @@ import {
 import {
   PlantAvatarInterceptor,
   PlantLogImageInterceptor,
-  type UploadedImageFile,
 } from './plant-upload.interceptor.js';
+import type { UploadedImageFile } from '../../common/storage/image-upload.interceptor.js';
 import { PlantsService } from './plants.service.js';
 
 /**

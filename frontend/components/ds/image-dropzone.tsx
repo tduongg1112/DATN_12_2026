@@ -41,7 +41,7 @@ export function ImageDropzone({
     <div className={cn("grid gap-2", className)}>
       <div
         className={cn(
-          "dropzone min-h-[360px] content-center transition-colors",
+          "dropzone min-h-[360px] content-center transition-colors duration-[var(--dur-fast)]",
           dragging && "border-solid bg-[var(--olive-100)]",
           disabled && "pointer-events-none opacity-60"
         )}

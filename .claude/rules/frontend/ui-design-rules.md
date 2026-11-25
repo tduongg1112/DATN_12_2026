@@ -28,6 +28,7 @@ paths:
 - Trạng thái sức khoẻ cây phải có cả màu lẫn chữ (`../design/01-color.md`, mục "Trạng thái sức khoẻ cây"). Nhãn trạng thái dùng đúng tên trong Bảng 4.8 của Chương 4.
 - ADMIN dùng được mọi màn của USER (OQ-22): khu quản trị (khuôn "Quản trị") và khu người dùng phải có đường chuyển qua lại rõ ràng.
 - Màu nhãn tình trạng (Dương chốt 21/11, theo cột "Dùng khi" của design/01): Chưa chẩn đoán → `info`; Khoẻ mạnh, Đã khỏi → `healthy`; Đang có bệnh → `severe`; Đang điều trị → `watch`. Dùng `<HealthStatus>` trong `components/ds/health-status.tsx`, không tự gán lại.
+- Mọi `transition-*`, `animate-*` phải kèm thời lượng token `duration-[var(--dur-fast|base|slow)]`. Token về 0 khi `prefers-reduced-motion` (`tokens.css`), còn thời lượng mặc định của Tailwind thì không. Sai: `transition-colors`. Đúng: `transition-colors duration-[var(--dur-fast)]`.
 - Kiểm tra bố cục ở 360/390/1440 bằng trang `/dev/design-check` và `/dev/shells/*` khi chạy dev.
 
 ## 3. Checklist trước khi bàn giao màn hình

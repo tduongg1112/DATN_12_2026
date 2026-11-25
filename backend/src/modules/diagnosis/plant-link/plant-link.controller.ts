@@ -16,10 +16,8 @@ import {
   PlantIdDto,
   type PlantLink,
 } from '../../plants/dto/plant.dto.js';
-import {
-  PlantAvatarInterceptor,
-  type UploadedImageFile,
-} from '../../plants/plant-upload.interceptor.js';
+import { PlantAvatarInterceptor } from '../../plants/plant-upload.interceptor.js';
+import type { UploadedImageFile } from '../../../common/storage/image-upload.interceptor.js';
 import { DiagnosisIdParam } from '../dto/diagnosis.dto.js';
 import { PlantLinkService } from './plant-link.service.js';
 

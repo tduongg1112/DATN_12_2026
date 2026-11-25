@@ -159,7 +159,7 @@ export function CameraView({ onCapture, onUpload, onClose }: CameraViewProps) {
           </button>
           <button
             type="button"
-            className="size-[var(--ctl-lg)] rounded-full bg-surface ring-4 ring-[var(--neutral-0)]/40 ring-offset-4 ring-offset-[var(--neutral-900)] transition-transform outline-none focus-visible:ring-[var(--olive-400)] active:scale-95 disabled:opacity-60"
+            className="size-[var(--ctl-lg)] rounded-full bg-surface ring-4 ring-[var(--neutral-0)]/40 ring-offset-4 ring-offset-[var(--neutral-900)] transition-transform duration-[var(--dur-fast)] outline-none focus-visible:ring-[var(--olive-400)] active:scale-95 disabled:opacity-60"
             aria-label={T.SHUTTER}
             onClick={capture}
             disabled={state.status !== "ready"}

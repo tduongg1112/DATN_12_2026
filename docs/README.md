@@ -91,6 +91,17 @@ Thứ tự gợi ý ban đầu (cột #) dựa trên phụ thuộc dữ liệu: 
 | 6 | [`disease_library`](disease_library/specs_disease_library.md) | UC05 | LIB-01..04 (1/1/2) | catalog | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](disease_library/api_disease_library.md), [db](disease_library/database_design_disease_library.md), `../design/screens/disease_library.md` | DONE (build-first) | — |
 | 7 | [`dashboard`](dashboard/specs_dashboard.md) | UC07 | ADM-03, 04, 06 (1/1/1) | diagnosis | Chờ duyệt OQ-61 → OQ-65, TD-34, TD-35; nhóm AI xem nhóm chỉ số chất lượng mô hình | VERIFIED (build-first) | DRAFT (25/11) · [api](dashboard/api_dashboard.md), [db](dashboard/database_design_dashboard.md), `../design/screens/dashboard.md` | — | — |
 
+**Bước 9 `/review-code` (25/11), chạy chung cho 6 feature đã code** (auth, disease_library, diagnosis, history, my_plants, catalog): không có lỗi Chặn hay Quan trọng. Dương duyệt sửa cả 7 lỗi Nhỏ:
+
+- gom interceptor nhận ảnh về `common/storage/image-upload.interceptor.ts`;
+- chuyển `escapeLike` sang `common/sql/`;
+- thêm thời lượng token cho 2 hiệu ứng;
+- thêm test 403 cho route ghi của quản trị và ca ADMIN dùng nhắc việc;
+- ghi các chữ Claude soạn còn sót vào `screens/auth.md`, `screens/catalog.md` (chờ duyệt);
+- đổi nhãn dock thành "Bệnh cây hay gặp".
+
+Rules và `technical_overview.md` đã cập nhật theo các quyết định đã chốt: TD-14, 24, 26, 28, 29, 31, mã lỗi khoá ngoại, thời lượng chuyển động, Next.js 16.4.6, bỏ nhãn "(đề xuất)" ở các quy tắc đã áp. `dashboard` chạy `/review-code` riêng khi code xong.
+
 **Việc nền, làm trước feature đầu tiên (đề xuất):**
 
 | # | Việc | Căn cứ | Trạng thái (20/11) |

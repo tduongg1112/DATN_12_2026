@@ -24,7 +24,7 @@ export const USER_NAV: NavItem[] = [
   { href: "/diagnose", label: "Chẩn đoán", icon: Camera },
   { href: "/history", label: "Lịch sử tra cứu", icon: History },
   { href: "/plants", label: "Cây trồng của tôi", icon: Sprout },
-  { href: "/library", label: "Thư viện bệnh", icon: BookOpen },
+  { href: "/library", label: "Bệnh cây hay gặp", icon: BookOpen },
 ]
 
 /** Dock của khu quản trị. ADMIN dùng được khu người dùng (OQ-22). */

@@ -166,7 +166,7 @@ Lượt đã xoá mềm **vẫn được đếm**: specs `history` BR-09 ghi lư
 | N3 | Nội dung 6 bệnh mẫu do Claude soạn, chỉ dùng khi dev (OQ-36) | Nội dung thật theo OQ-19 |
 | N4 | "Đang phổ biến" tính lại ở mỗi lần gọi L2, L3, không có cache | Truy vấn chỉ trả ≤ N id và dùng `ix_diagnoses_created`; xem lại khi `diagnoses` lớn |
 | N5 | Chưa có `test_case_`, `test_plan_` cho feature này (giống `auth`, build-first) | Viết ở bước `/run-tests` |
-| N6 | Dock vẫn ghi "Thư viện bệnh" (từ phần nền), còn tiêu đề trang là "Bệnh cây hay gặp" (specs) | Đề xuất đổi nhãn dock cho khớp ở `/review-code` |
+| ~~N6~~ | ~~Dock vẫn ghi "Thư viện bệnh" (từ phần nền), còn tiêu đề trang là "Bệnh cây hay gặp" (specs)~~ | **Đã sửa 25/11** (`/review-code`, Dương duyệt): nhãn dock đổi thành "Bệnh cây hay gặp" (`frontend/lib/navigation.ts`) |
 
 ## Lịch sử thay đổi
 
@@ -175,3 +175,4 @@ Lượt đã xoá mềm **vẫn được đếm**: specs `history` BR-09 ghi lư
 | 22/11/2026 | 0.1 | Sinh từ specs v0.2 (build-first, như `auth`) | Claude |
 | 22/11/2026 | 0.2 | Dương duyệt: chốt TD-24, OQ-37, OQ-38. Chuyển REVIEWED | Claude theo quyết định của Dương |
 | 22/11/2026 | 0.3 | Code xong (`backend/src/modules/catalog/library/`). API đúng như tài liệu; thêm N4 → N6 | Claude |
+| 25/11/2026 | 0.4 | `/review-code`: sửa N6 (nhãn dock); `escapeLike` chuyển sang `backend/src/common/sql/` | Claude theo quyết định của Dương |

@@ -258,18 +258,27 @@ describe('Catalog (e2e)', () => {
   });
 
   describe('Phân quyền (specs mục 6)', () => {
+    // Id 0 không tồn tại: nếu thiếu guard thì request cũng không đụng dữ liệu dev.
     it.each([
       ['GET', '/admin/crops'],
+      ['POST', '/admin/crops'],
+      ['GET', '/admin/crops/0'],
+      ['PUT', '/admin/crops/0'],
+      ['POST', '/admin/crops/0/status'],
       ['GET', '/admin/diseases'],
+      ['POST', '/admin/diseases'],
       ['GET', '/admin/diseases/related?cropId=1&pathogenGroup=FUNGUS'],
+      ['GET', '/admin/diseases/0'],
+      ['PUT', '/admin/diseases/0'],
+      ['POST', '/admin/diseases/0/status'],
+      ['DELETE', '/admin/diseases/0'],
       ['GET', '/admin/labels/model'],
       ['POST', '/admin/labels/sync'],
     ])('USER gọi %s %s: 403', async (method, p) => {
-      const req =
-        method === 'GET'
-          ? get(p, user.token)
-          : auth(request(http).post(api(p)), user.token);
-      const res = await req.expect(403);
+      const verb = method.toLowerCase() as 'get' | 'post' | 'put' | 'delete';
+      const res = await auth(request(http)[verb](api(p)), user.token).expect(
+        403,
+      );
       expect(res.body).toMatchObject({
         code: 'FORBIDDEN',
         message: MSG.FORBIDDEN,

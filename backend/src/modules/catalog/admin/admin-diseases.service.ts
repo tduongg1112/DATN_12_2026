@@ -10,7 +10,7 @@ import { Crop } from '../entities/crop.entity.js';
 import { DiseaseImage } from '../entities/disease-image.entity.js';
 import { Disease, type PublishStatus } from '../entities/disease.entity.js';
 import { ModelLabel } from '../entities/model-label.entity.js';
-import { escapeLike } from '../library/library.service.js';
+import { escapeLike } from '../../../common/sql/escape-like.js';
 import {
   CATALOG_MESSAGES as M,
   PG_DELETE_BLOCKED_CODES,

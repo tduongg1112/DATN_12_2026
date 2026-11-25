@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, type SelectQueryBuilder } from 'typeorm';
 import { AppException } from '../../../common/exceptions/app.exception.js';
 import { DEFAULT_ERRORS } from '../../../common/exceptions/default-errors.js';
+import { escapeLike } from '../../../common/sql/escape-like.js';
 import { StorageService } from '../../../common/storage/storage.service.js';
 import { Crop } from '../entities/crop.entity.js';
 import { DiseaseImage } from '../entities/disease-image.entity.js';
@@ -30,11 +31,6 @@ export function diseaseNotFound(): AppException {
     'DISEASE_NOT_FOUND',
     DEFAULT_ERRORS[HttpStatus.NOT_FOUND].message,
   );
-}
-
-/** Thoát ký tự đặc biệt của LIKE để `q` chỉ là chữ thường (ESCAPE '\'). */
-export function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 
 /** Một dòng thẻ bệnh lấy bằng `getRawMany` (tên cột theo alias trong `selectCards`). */

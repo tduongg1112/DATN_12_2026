@@ -9,7 +9,7 @@ paths:
 
 ## 1. Nền tảng
 
-- **Đọc `frontend/AGENTS.md` trước.** Next.js 16.4.3 có thay đổi phá vỡ tương thích. Khi dùng API về routing, data fetching, caching, metadata, image hay font, đọc hướng dẫn trong `frontend/node_modules/next/dist/docs/` trước [Repo].
+- **Đọc `frontend/AGENTS.md` trước.** Next.js 16.4.6 có thay đổi phá vỡ tương thích. Khi dùng API về routing, data fetching, caching, metadata, image hay font, đọc hướng dẫn trong `frontend/node_modules/next/dist/docs/` trước [Repo].
 - React 19.3, App Router (thư mục `app/`), TypeScript strict, alias `@/*` [Repo].
 - shadcn/ui style `base-nova` dựng trên **`@base-ui/react`, không phải Radix**. Props và cách ghép component khác Radix, nên phải mở file trong `components/ui/` để xem trước khi dùng [Repo].
 - Prettier: không dấu chấm phẩy, nháy kép, `trailingComma: es5`, có plugin sắp xếp class Tailwind [Repo].
@@ -25,9 +25,9 @@ paths:
 | `components/ds/` | Component tự xây: dock, card-stack, dial, health-status… | [D 08] |
 | `styles/` | Bản chép `tokens.css`, `components.css` từ `../design/code/` | [D 08] |
 | `hooks/`, `lib/` | Hook và tiện ích dùng chung | [Repo] |
-| `lib/api/` | **Lớp duy nhất gọi backend**, kể cả giữ token và tự refresh | (đề xuất) [TD-02][TD-12] |
+| `lib/api/` | **Lớp duy nhất gọi backend**, kể cả giữ token và tự refresh | [TD-02][TD-12] |
 | `lib/device/` | Lớp bọc API thiết bị: camera, thông báo, lưu tệp | [D 06] |
-| `components/<feature>/` | Component riêng của từng feature | (đề xuất) |
+| `components/<feature>/` | Component riêng của từng feature | [Repo] |
 | `components/layout/` | Khung trang: `UserPageShell` (hero/list/detail), `AdminPageShell`, `FormShell`, `AppTopbar` | Dựng 21/11 |
 | `components/ds/states/` | `EmptyState`, `ErrorState`, `Skeleton`/`PageSkeleton`, `OfflineBanner` (design/07) | Dựng 21/11 |
 | `lib/auth/` | `AuthProvider`/`useAuth`, `RequireAuth`, `postLoginRedirect`, `loginUrl` | Dựng 21/11 |
@@ -43,7 +43,7 @@ Chưa chọn PWA hay Capacitor (hoãn). Code phải **chạy được ở cả h
 - **Không dùng** các tính năng mà bản tĩnh không hỗ trợ [Next `01-app/02-guides/static-exports.md`, mục Unsupported Features]:
   - Server Actions; Server Components lấy dữ liệu động; Route Handlers đọc `Request`.
   - `cookies()`, `rewrites`, `redirects`, `headers` trong `next.config`, `proxy`.
-  - Dynamic route (`[id]`) không có `generateStaticParams()`. Trang chi tiết theo id **(đề xuất)** dùng query string, ví dụ `/plants/detail?id=12`, đọc bằng `useSearchParams` và **bọc trong `<Suspense>`** (thiếu thì `next build` lỗi). URL viết tiếng Anh (Dương chốt 21/11, theo CLAUDE.md luật 10).
+  - Dynamic route (`[id]`) không có `generateStaticParams()`. Trang chi tiết theo id dùng query string, ví dụ `/plants/detail?id=12`, đọc bằng `useSearchParams` và **bọc trong `<Suspense>`** (thiếu thì `next build` lỗi). URL viết tiếng Anh (Dương chốt 21/11, theo CLAUDE.md luật 10).
   - `next/image` với loader mặc định. Dùng `unoptimized` hoặc thẻ `img` (ảnh từ presigned URL của S3).
 - Bảo vệ route bằng kiểm tra phía client (layout hoặc hook kiểm tra phiên), không dùng `proxy`.
 - Kiểu dữ liệu của response viết tay theo `docs/<feature>/api_<feature>.md`, không đoán.
