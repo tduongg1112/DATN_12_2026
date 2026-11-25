@@ -89,7 +89,7 @@ Thứ tự gợi ý ban đầu (cột #) dựa trên phụ thuộc dữ liệu: 
 | 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | REVIEWED (build-first) · [api](history/api_history.md), [db](history/database_design_history.md), `../design/screens/history.md` | DONE (build-first) | — |
 | 5 | [`my_plants`](my_plants/specs_my_plants.md) | UC04 | PLANT-01..06 (4/1/1), NOTI-01..04 (0/3/1) | diagnosis | — | VERIFIED (build-first) | REVIEWED (build-first) · [api](my_plants/api_my_plants.md), [db](my_plants/database_design_my_plants.md), [template](my_plants/template_my_plants.md), `../design/screens/my_plants.md` | DONE (build-first; đợt 1 23/11, đợt 2 24/11) | — |
 | 6 | [`disease_library`](disease_library/specs_disease_library.md) | UC05 | LIB-01..04 (1/1/2) | catalog | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](disease_library/api_disease_library.md), [db](disease_library/database_design_disease_library.md), `../design/screens/disease_library.md` | DONE (build-first) | — |
-| 7 | [`dashboard`](dashboard/specs_dashboard.md) | UC07 | ADM-03, 04, 06 (1/1/1) | diagnosis | — | VERIFIED (build-first) | — | — | — |
+| 7 | [`dashboard`](dashboard/specs_dashboard.md) | UC07 | ADM-03, 04, 06 (1/1/1) | diagnosis | Chờ duyệt OQ-61 → OQ-65, TD-34, TD-35; nhóm AI xem nhóm chỉ số chất lượng mô hình | VERIFIED (build-first) | DRAFT (25/11) · [api](dashboard/api_dashboard.md), [db](dashboard/database_design_dashboard.md), `../design/screens/dashboard.md` | — | — |
 
 **Việc nền, làm trước feature đầu tiên (đề xuất):**
 
