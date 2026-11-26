@@ -6,9 +6,12 @@ import { LayoutDashboard } from "lucide-react"
 import { Dock } from "@/components/ds/dock"
 import { useAuth } from "@/lib/auth"
 import { ADMIN_NAV, ROUTES, USER_NAV } from "@/lib/navigation"
+import { useRecordPageVisit } from "@/lib/navigation-history"
 import { cn } from "@/lib/utils"
 
 import { AppTopbar } from "./app-topbar"
+import { NotificationBell } from "./notification-bell"
+import { UserMenu } from "./user-menu"
 
 /** Khuôn trang theo design/06. */
 export type UserLayout = "hero" | "list" | "detail"
@@ -16,6 +19,8 @@ export type UserLayout = "hero" | "list" | "detail"
 interface ShellProps {
   title?: string
   backHref?: string
+  /** Xem `AppTopbar`. "history": về trang trước trong app, mở thẳng thì về `backHref`. */
+  backBehavior?: "link" | "history"
   actions?: React.ReactNode
   children: React.ReactNode
 }
@@ -49,9 +54,11 @@ export function UserPageShell({
   layout,
   title,
   backHref,
+  backBehavior,
   actions,
   children,
 }: ShellProps & { layout: UserLayout }) {
+  useRecordPageVisit()
   return (
     <div
       className={cn("app-shell", layout === "hero" && "app-shell--hero")}
@@ -62,9 +69,12 @@ export function UserPageShell({
         <AppTopbar
           title={title}
           backHref={backHref}
+          backBehavior={backBehavior}
+          leading={<UserMenu />}
           actions={
             <>
               {actions}
+              <NotificationBell />
               <AdminAreaLink />
             </>
           }
@@ -86,7 +96,17 @@ export function AdminPageShell({
     <div className="app-shell">
       <Dock items={ADMIN_NAV} label="Điều hướng quản trị" />
       <main className="mx-auto w-full max-w-[var(--container-max)] min-w-0">
-        <AppTopbar title={title} backHref={backHref} actions={actions} />
+        <AppTopbar
+          title={title}
+          backHref={backHref}
+          leading={<UserMenu />}
+          actions={
+            <>
+              {actions}
+              <NotificationBell />
+            </>
+          }
+        />
         {children}
       </main>
     </div>

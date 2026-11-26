@@ -21,6 +21,11 @@ export interface RequestOptions {
   signal?: AbortSignal
 }
 
+/** URL đầy đủ tới backend, dùng cho điều hướng toàn trang (vd đăng nhập Google). */
+export function apiUrl(path: string, query?: Query): string {
+  return buildUrl(path, query)
+}
+
 function buildUrl(path: string, query?: Query): string {
   if (!BASE_URL) {
     throw new Error(

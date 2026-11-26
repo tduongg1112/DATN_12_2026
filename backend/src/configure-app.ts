@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { localStorageRoot } from './common/storage/storage.module.js';
 import type { EnvironmentVariables } from './config/env.validation.js';
@@ -10,6 +11,8 @@ export const API_PREFIX = 'api/v1';
 export function configureApp(app: NestExpressApplication): void {
   const config = app.get(ConfigService<EnvironmentVariables, true>);
   app.setGlobalPrefix(API_PREFIX);
+  // TD-12: đọc cookie refresh token (httpOnly) ở các route /auth/*.
+  app.use(cookieParser());
   app.enableCors({
     origin: config.get('FRONTEND_URL', { infer: true }),
     credentials: true,

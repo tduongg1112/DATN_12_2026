@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { OfflineBanner } from "@/components/ds/states"
+import { ToastProvider } from "@/components/ds/toast"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
 
@@ -10,10 +11,12 @@ import { AuthProvider } from "@/lib/auth"
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <OfflineBanner />
-        {children}
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <OfflineBanner />
+          {children}
+        </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
   )
 }

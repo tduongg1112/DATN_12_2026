@@ -29,7 +29,7 @@ export class HttpAiClient extends AiClient {
       new Blob([new Uint8Array(input.image)], { type: input.contentType }),
       `image.${ext}`,
     );
-    if (input.cropCode) form.append('crop_code', input.cropCode);
+    form.append('crop_code', input.cropCode);
     form.append('top_k', String(input.topK ?? this.options.defaultTopK));
 
     const body = await this.request('/predict', { method: 'POST', body: form });
@@ -124,6 +124,11 @@ export function parsePredictResponse(body: unknown): AiPredictResult {
     if (predictions[i].probability > predictions[i - 1].probability) {
       throw invalid('predictions chưa sắp giảm dần');
     }
+  }
+  if (
+    new Set(predictions.map((p) => p.classCode)).size !== predictions.length
+  ) {
+    throw invalid('predictions trùng class_code');
   }
   return {
     modelVersion: b.model_version,

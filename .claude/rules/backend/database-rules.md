@@ -22,7 +22,7 @@ paths:
 ## 2. Đặt tên [ERD 6]
 
 - Bảng: chữ thường, snake_case, số nhiều (`users`, `plant_logs`, `diagnosis_predictions`).
-- Cột: snake_case. Entity TypeScript: lớp PascalCase số ít (`User`, `PlantLog`), thuộc tính camelCase, ánh xạ tên cột rõ ràng bằng `name: 'snake_case'` trong decorator **(đề xuất)**.
+- Cột: snake_case. Entity TypeScript: lớp PascalCase số ít (`User`, `PlantLog`), thuộc tính camelCase, ánh xạ tên cột rõ ràng bằng `name: 'snake_case'` trong decorator.
 - Chỉ mục: `ix_<bảng>_<cột>`. Chỉ mục duy nhất: `ux_…` (theo Bảng 6.14).
 - Constraint đặt tên tường minh, giống hệt nhau ở migration và entity: `pk_<bảng>`, `fk_<bảng>_<quan hệ>`, `uq_<bảng>_<cột>`, `ck_<bảng>_<ý nghĩa>`. Entity dùng `primaryKeyConstraintName`, `foreignKeyConstraintName`, `@Unique(name, …)`, `@Check(name, …)`, `@Index(name, …)`. Nhờ vậy `npm run schema:log` so khớp được.
 
@@ -59,6 +59,7 @@ Kiểm tra entity khớp CSDL: sau khi chạy migration, `npm run schema:log` ph
   - Ngày chẩn đoán gần nhất của cây lấy bằng `MAX(created_at)` trên các lượt còn hiệu lực.
   - Bệnh đang mắc của cây lấy từ lượt `DISEASE` gần nhất.
 - Ràng buộc `CHECK` và `UNIQUE` mức bảng chép đúng như `data_model.md` mục 2. Những ràng buộc phụ thuộc ngưỡng hoặc thời gian thì đặt ở service.
+- Bắt lỗi khoá ngoại khi xoá: ràng buộc `RESTRICT` báo mã `23001`, `NO ACTION` báo `23503`, nên **kiểm tra cả hai** (xem `PG_DELETE_BLOCKED_CODES` trong `catalog-messages.ts`). Trùng khoá duy nhất là `23505`. Sai: chỉ bắt `23503` thì xoá bệnh đã có dự đoán trả 500 thay vì 409.
 
 ## 6. Migration và seed [ERD 7.1]
 
@@ -67,5 +68,5 @@ Kiểm tra entity khớp CSDL: sau khi chạy migration, `npm run schema:log` ph
 - Thứ tự tạo bảng: users → crops → diseases → disease_images → model_labels → plants → plant_logs → reminders → notifications → diagnoses → diagnosis_predictions.
 - Lệnh: `npm run migration:run`, `npm run migration:revert`, `npm run schema:log` (build rồi chạy CLI TypeORM trên `dist/database/data-source.js`, biến môi trường nạp bằng `node --env-file-if-exists=.env`). Migration liệt kê tường minh trong `src/database/migrations/index.ts`, entity trong `src/database/entities.ts`.
 - Seed `npm run seed`: 1 ADMIN lấy từ `ADMIN_EMAIL`/`ADMIN_PASSWORD`, 5 loại cây `RICE, CORN, TOMATO, CHILI, POTATO`. Bệnh và nhãn mẫu trong file 04 chỉ là ví dụ (mã nhãn lúa là giả định), phải thay bằng danh sách thật của nhóm AI [ERD 7.2]. Dữ liệu mẫu này chỉ nạp bằng `npm run seed:dev`. Seed chạy lại nhiều lần không tạo trùng; ADMIN đã có thì giữ nguyên.
-- Cột ảnh `*_url` lưu khoá đối tượng S3 hay URL đầy đủ: **chưa chốt (TD-14)**. Hỏi Dương trước khi viết entity đầu tiên có cột ảnh.
-- Mỗi migration có cả `up` và `down`. Không sửa migration đã chạy, muốn thay đổi thì tạo migration mới **(đề xuất)**.
+- Cột ảnh `*_url` lưu khoá đối tượng (ví dụ `avatars/2026/11/<uuid>.jpg`); ảnh ngoài (ảnh Google) lưu URL `https://…`. API đổi ra URL qua `StorageService.resolveUrl`, nên đổi nhà cung cấp lưu trữ không phải sửa dữ liệu [TD-14].
+- Mỗi migration có cả `up` và `down`. Không sửa migration đã chạy, muốn thay đổi thì tạo migration mới.

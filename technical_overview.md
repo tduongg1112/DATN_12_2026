@@ -43,7 +43,7 @@ Mọi quan hệ hợp thành nằm gọn trong một mô-đun. Giữa các mô-�
 
 | Thành phần | Phiên bản | Ghi chú |
 |---|---|---|
-| Next.js (App Router) | 16.4.3 | **Đọc `frontend/AGENTS.md`**: API khác kiến thức cũ, tài liệu ở `node_modules/next/dist/docs/` |
+| Next.js (App Router) | 16.4.6 | **Đọc `frontend/AGENTS.md`**: API khác kiến thức cũ, tài liệu ở `node_modules/next/dist/docs/` |
 | React / React DOM | 19.3.1 | |
 | Tailwind CSS | ^4 (`@tailwindcss/postcss`) | Cấu hình trong CSS, không có `tailwind.config` |
 | shadcn/ui | ^4.23.0, style `base-nova` | Xây trên `@base-ui/react` ^1.9.0, **không phải Radix** |
@@ -109,16 +109,16 @@ Dự kiến viết bằng Python, PyTorch, chuyển sang ONNX/TFLite (Đề cư�
 
 | Mục | Nội dung |
 |---|---|
-| `POST /predict` (multipart) | `image`: ảnh đã cắt vuông · `crop_code`: mã loại cây (tuỳ chọn) · `top_k`: mặc định 3 |
+| `POST /predict` (multipart) | `image`: ảnh đã cắt vuông · `crop_code`: mã loại cây (**bắt buộc**, OQ-05 chốt 22/11) · `top_k`: mặc định 3 |
 | `200 OK` (JSON) | `model_version` · `inference_ms` · `predictions: [{ class_code, probability }]` giảm dần · `heatmap_url` (tuỳ chọn) |
 | Lỗi | `400` hoặc `422`: ảnh hỏng, sai định dạng, loại cây không hỗ trợ · `503`: AI service quá tải. Gặp lỗi thì backend đánh dấu lượt chẩn đoán `FAILED` và cho thử lại |
 | `GET /labels` | Danh sách `class_code` của phiên bản mô hình đang dùng, để đối chiếu với `model_labels` khi đổi mô hình. Dạng JSON chưa chốt với nhóm AI; `HttpAiClient` tạm nhận mảng chuỗi |
 | Thời gian chờ | 15 giây (Chương 4 UC02 ngoại lệ 10.1, ghi "define sau"). Để trong cấu hình |
 | Tiền xử lý | AI service resize về 224×224 và chuẩn hoá giống hệt lúc huấn luyện. Ứng dụng chỉ cắt vuông |
-| Ngưỡng độ tin cậy | **Một ngưỡng chung**, để trong cấu hình backend. Giá trị chờ nhóm AI (OQ-06) |
+| Ngưỡng độ tin cậy | **Một ngưỡng chung**, để trong cấu hình backend (`AI_CONFIDENCE_THRESHOLD`). Tạm mặc định 0.6 (TD-26); giá trị thật chờ nhóm AI (OQ-06) |
 | Ánh xạ | Backend tra `class_code` trong `model_labels` (`is_active = true`). Không tìm thấy thì coi là lỗi cấu hình: `FAILED`, ghi log ERROR và gửi thông báo trong ứng dụng cho mọi ADMIN (OQ-26) |
 
-Phía backend, mọi lời gọi AI service đi qua một interface client duy nhất, chọn bản cài theo `AI_MODE` (`mock` hoặc `http`, TD-04). Khi dev và test backend thì dùng mock; khi nghiệm thu thì dùng mô hình thật cùng nhóm AI. `crop_code` chỉ gửi khi người dùng chọn loại cây (OQ-05, tạm).
+Phía backend, mọi lời gọi AI service đi qua một interface client duy nhất, chọn bản cài theo `AI_MODE` (`mock` hoặc `http`, TD-04). Khi dev và test backend thì dùng mock; khi nghiệm thu thì dùng mô hình thật cùng nhóm AI. `crop_code` luôn được gửi, vì người dùng bắt buộc chọn loại cây trước khi chẩn đoán (OQ-05, chốt 22/11). Mô hình chạy trên server (OQ-18, chốt 22/11).
 
 ## 6. Dữ liệu
 
@@ -134,7 +134,7 @@ Phía backend, mọi lời gọi AI service đi qua một interface client duy n
 | Docker | Đề cương dự kiến triển khai bằng Docker. Hiện mới có compose cho DB và Redis |
 | CI/CD | Chưa có |
 | Git | Monorepo `code/` với nhánh `main` và remote `origin`. Xem lịch sử bằng `git log`. Bản sao `.git` cũ của hai repo riêng được lưu ở `../git-backup-20261108/` |
-| Commit | Conventional Commits. Đề xuất mỗi feature một nhánh `feat/<feature>`, merge vào `main` sau bước 11 |
+| Commit | Conventional Commits. Phát triển trên nhánh `tduong-dev`, merge vào `main` sau bước 11; không bắt buộc nhánh riêng cho feature (Dương chốt 21/11) |
 | Biến môi trường | `.env` bị ignore ở cả gốc lẫn `backend/`. Mẫu ở `backend/.env.example`. Backend kiểm tra biến khi khởi động (`src/config/env.validation.ts`): thiếu hoặc sai thì dừng và nêu tên khoá. Migration và seed chỉ cần `DB_*` (seed cần thêm `ADMIN_*`) |
 | Tài liệu ngoài git | `../design/`, gồm mô tả màn hình ở `../design/screens/<feature>.md` (TD-11) và nguồn SRS ở thư mục cha |
 
@@ -180,7 +180,7 @@ Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. V�
 | F5 | `lib/auth/`: access token trong bộ nhớ, khôi phục phiên bằng refresh khi mở app, `RequireAuth` (chuyển tới `/login?next=…`), `postLoginRedirect` (ADMIN về `/admin`) | C4 UC01, OQ-22 |
 | F6 | `lib/device/`: `CameraService` + bản web (`getUserMedia`), nén ảnh (cạnh dài 1600px, JPEG 0.85, đề xuất), kiểm tra JPG/PNG ≤ 10 MB | design/06 |
 | F7 | Trang `/dev/*` (`app/dev/**/page.dev.tsx`) chỉ có khi `next dev` nhờ `pageExtensions` theo phase trong `next.config.ts`; bản build production không chứa chúng. Dùng để xem thành phần và khung trang không cần đăng nhập | |
-| F8 | Next.js 16.4.3 báo có lỗ hổng bảo mật đã công bố (npm advisories); `next build`/`next dev` đôi khi dừng lần đầu để nhắc. Chưa nâng cấp, chờ Dương quyết | |
+| F8 | ~~Next.js 16.4.3 báo có lỗ hổng bảo mật đã công bố~~ Đã nâng lên 16.4.6 (commit `ff029cb`) | |
 
 **Tài liệu:**
 
@@ -202,11 +202,14 @@ Các rule chỉ tự nạp khi Claude **đọc** file khớp đường dẫn. V�
 | TD-06 | Frontend 3000, backend 4000, AI service 8000 | Đã chốt | — |
 | TD-07 | Môi trường demo/staging và cách triển khai | Chưa chốt | Bước 10–11 |
 | TD-08 | Mô-đun thứ 5 `dashboard`, truy vấn tổng hợp chỉ đọc qua `DataSource` | Đã chốt | — |
+| TD-24 | Ngoại lệ thứ hai của ranh giới mô-đun: truy vấn "Đang phổ biến" đặt trong `catalog`, chỉ đọc `diagnoses`, `diagnosis_predictions` qua `DataSource` | Đã chốt 22/11 | disease_library |
 | TD-09 | Bỏ `@nestjs/observe` | Đã áp dụng 21/11 | — |
 | TD-10 | Công cụ test UI end-to-end | Hoãn tới bước 10 | — |
 | TD-11 | Mô tả màn hình đặt ở `../design/screens/` (ngoài git) | Đã chốt | Bước 6 (`/gen-docs` và các skill đã cập nhật 21/11) |
 | TD-12 | Access token trong bộ nhớ; refresh token trong cookie httpOnly, SameSite=Lax, path `/api/v1/auth` | Đã chốt | — |
 | TD-13 | Google OAuth làm ngay trong `auth` | Đã chốt | — |
-| TD-14 | Cột ảnh `*_url` lưu khoá đối tượng S3 hay URL đầy đủ | Chưa chốt | Entity đầu tiên có cột ảnh (auth: `avatar_url`) |
+| TD-14 | Cột ảnh `*_url` lưu khoá đối tượng; ảnh ngoài (ảnh Google) lưu URL `https://…`; đổi ra URL qua `StorageService.resolveUrl`, nên đổi sang S3 hoặc Cloudinary không phải sửa dữ liệu | Đã chốt 21/11 | — |
+
+TD-15 → TD-35 (phát sinh khi làm từng feature) ghi ở `docs/_shared/open_questions.md` mục B. Các mục mở rộng ranh giới mô-đun (TD-24, TD-29, TD-31) đã chép vào be-coding-rules mục 2. Còn chờ duyệt: TD-17, TD-19, TD-20, TD-34, TD-35.
 
 Dependency mới đã được duyệt về nguyên tắc, tên gói và phiên bản cụ thể hỏi lại khi cài: SDK S3 (TD-01), client Redis (TD-03), `@nestjs/swagger` (TD-05), thư viện Google OAuth (TD-13), có thể thêm `cookie-parser` (TD-12).

@@ -1,6 +1,7 @@
 import 'reflect-metadata';
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -90,7 +91,7 @@ export class EnvironmentVariables extends DatabaseEnvironment {
 
   @IsString()
   @IsNotEmpty()
-  JWT_ACCESS_EXPIRES_IN: string = '15m';
+  JWT_ACCESS_EXPIRES_IN: string = '30m';
 
   @IsString()
   @MinLength(32)
@@ -148,15 +149,40 @@ export class EnvironmentVariables extends DatabaseEnvironment {
   @Min(1)
   AI_TOP_K: number = 3;
 
-  /** OQ-06: một ngưỡng chung. Giá trị chờ nhóm AI nên được phép để trống. */
-  @IsOptional()
+  /**
+   * OQ-06: một ngưỡng chung. 0.6 là giá trị TẠM khi dev, chờ nhóm AI chốt (TD-26:
+   * có mặc định để luôn tính được dạng kết quả UNCERTAIN).
+   */
   @IsNumber()
   @Min(0)
   @Max(1)
-  AI_CONFIDENCE_THRESHOLD?: number;
+  AI_CONFIDENCE_THRESHOLD: number = 0.6;
 
   @IsIn(AI_MOCK_SCENARIOS)
   AI_MOCK_SCENARIO: AiMockScenario = 'ok';
+
+  // --- Thư viện bệnh: "Đang phổ biến" (disease_library BR-04, OQ-28, OQ-37) ---
+  @IsInt()
+  @Min(1)
+  LIBRARY_TRENDING_LIMIT: number = 3;
+
+  @IsInt()
+  @Min(1)
+  LIBRARY_TRENDING_DAYS: number = 30;
+
+  // --- Job gửi nhắc việc (my_plants BR-15, TD-28) ---
+  /** TD-28: mỗi 5 phút. Dùng setInterval qua SchedulerRegistry, không cần thư viện cron. */
+  @IsInt()
+  @Min(1)
+  REMINDER_JOB_INTERVAL_MINUTES: number = 5;
+
+  /** `false` thì không tự chạy (vd khi test e2e gọi job trực tiếp). */
+  @IsBoolean()
+  @Transform(({ obj }: { obj: Record<string, unknown> }) => {
+    const raw = obj.REMINDER_JOB_ENABLED;
+    return raw === undefined || raw === true || String(raw) === 'true';
+  })
+  REMINDER_JOB_ENABLED: boolean = true;
 
   // --- Lưu ảnh (TD-01: dev lưu đĩa local, S3 khi deploy) ---
   @IsIn(STORAGE_DRIVERS)

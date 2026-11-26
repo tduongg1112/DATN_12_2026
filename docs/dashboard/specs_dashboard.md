@@ -29,7 +29,7 @@
 | BR-06 | Không có dữ liệu trong khoảng đã chọn: hiển thị "Chưa có dữ liệu trong khoảng thời gian này" thay cho biểu đồ | C4 4.1 |
 | BR-07 | *Bỏ ở bản build này.* (Lượt của người dùng chưa đồng ý chia sẻ dữ liệu chỉ hiển thị kết quả, không hiển thị ảnh. Không làm vì đã bỏ `allow_data_sharing`) | C4 6.1; OQ-12, DC-01 |
 | BR-08 | Mọi chỉ số chỉ đếm lượt `status = COMPLETED`. Lượt `FAILED`, `PROCESSING` không tính | OQ-23 |
-| BR-09 | Loại cây của một lượt là `diagnoses.crop_id`; NULL thì lấy theo `crop_id` của nhãn hạng 1 | OQ-05 |
+| BR-09 | Loại cây của một lượt là `diagnoses.crop_id` (luôn có, OQ-05 đổi 22/11) | OQ-05 |
 
 **Bảng 4.12. Các chỉ số trên dashboard**
 
@@ -75,7 +75,7 @@
 | OQ-23 | Đã chốt: chỉ đếm `COMPLETED` | BR-08 |
 | OQ-25 | Hoãn: chưa làm chỉ số "Tổng số người dùng" | Bảng 4.12 |
 | OQ-26 | Đã chốt: báo ADMIN bằng thông báo trong ứng dụng, không hiện trên dashboard | — |
-| OQ-05 | Đã chốt tạm: loại cây NULL thì theo nhãn hạng 1 | BR-09 |
+| OQ-05 | Đã chốt 22/11: chọn loại cây bắt buộc, loại cây lấy thẳng từ `diagnoses.crop_id` | BR-09 |
 | OQ-06 [AI] | Đã chốt một phần: một ngưỡng chung. **Giá trị chờ nhóm AI** | Tỷ lệ "Chưa xác định" |
 | TD-08 | Đã chốt: mô-đun `dashboard` riêng, SQL chỉ đọc | Mục 6 |
 
@@ -93,3 +93,4 @@ Ngoài phạm vi specs này: ADM-06 xuất ảnh cho nhóm AI (Could), hoãn vì
 |---|---|---|---|
 | 20/11/2026 | 0.1 | Tách từ C4 v0.2, ERD-doc, FL v0.2 khi dựng workflow | Claude (chờ Dương duyệt) |
 | 20/11/2026 | 0.2 | Build-first: áp OQ-05, 06, 11, 12, 14, 23, 25, 26, TD-08. Bỏ BR-07; thêm BR-08, BR-09; Bảng 4.12 hoãn "Tổng số người dùng", bỏ "Tỷ lệ đánh giá đúng". Chuyển VERIFIED | Claude theo quyết định của Dương |
+| 22/11/2026 | 0.3 | OQ-05 đổi (chọn loại cây bắt buộc): BR-09 bỏ cách lấy loại cây theo nhãn hạng 1 | Claude theo quyết định của Dương |

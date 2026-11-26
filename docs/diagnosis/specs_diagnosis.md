@@ -16,7 +16,7 @@
 | US-01 | Là người dùng, tôi muốn chụp ảnh cây bằng camera, có khung ngắm vuông và hướng dẫn chụp | C4 bước 1–5 | DIAG-01 Must |
 | US-02 | Là người dùng, tôi muốn tải ảnh có sẵn từ thiết bị lên | C4 3a–5a | DIAG-01 Must |
 | US-03 | Là người dùng, tôi muốn cắt khung vuông, xoay, chỉnh độ sáng và độ tương phản, hoặc chụp lại | C4 bước 6 | DIAG-02 Must |
-| US-04 | Là người dùng, tôi muốn chọn loại cây trước khi chẩn đoán (**tuỳ chọn**, có thể bỏ qua) | C4 bước 7; OQ-05 | DIAG-03 Should |
+| US-04 | Là người dùng, tôi chọn loại cây trước khi chẩn đoán (**bắt buộc**, OQ-05 đổi 22/11) | C4 bước 7; OQ-05 | DIAG-03 (FL: Should; bắt buộc trong luồng theo OQ-05) |
 | US-05 | Là người dùng, tôi muốn xem kết quả: tên bệnh, độ tin cậy, mức độ nguy hại, hai khả năng tiếp theo, triệu chứng, hướng xử lý | C4 bước 8–12 | DIAG-04 Must |
 | US-06 | Là người dùng, tôi muốn lưu kết quả vào một cây trong "Cây trồng của tôi", hoặc tạo cây mới từ kết quả | C4 bước 14–15 | DIAG-06 Must |
 | US-07 | Là người dùng, tôi muốn chẩn đoán lại từ trang chi tiết cây, loại cây được chọn sẵn và kết quả tự gắn vào cây | C4 1b, 7b, 14b | DIAG-06 Must |
@@ -37,9 +37,9 @@
 **Gửi và xử lý**
 | Mã | Quy tắc | Nguồn |
 |---|---|---|
-| BR-07 | Nhấn "Tiếp tục": kiểm tra ảnh hợp lệ, tải lên, hiển thị "Đang phân tích...". Tạo lượt chẩn đoán `status = PROCESSING` (gắn `user_id`, `crop_id` nếu có chọn, `plant_id` nếu đang chẩn đoán từ hồ sơ cây) **trước khi** gọi AI | C4 bước 8; ERD 7.4 |
+| BR-07 | Nhấn "Tiếp tục": kiểm tra ảnh hợp lệ, tải lên, hiển thị "Đang phân tích...". Tạo lượt chẩn đoán `status = PROCESSING` (gắn `user_id`, `crop_id` của loại cây đã chọn, `plant_id` nếu đang chẩn đoán từ hồ sơ cây) **trước khi** gọi AI. Chưa chọn loại cây thì không cho gửi (OQ-05); câu thông báo nguồn không có, soạn ở bước tài liệu của feature này | C4 bước 8; ERD 7.4; OQ-05 |
 | BR-08 | Mất kết nối khi tải ảnh: thông báo và cho thử lại, không cần chụp lại | C4 8.1 |
-| BR-09 | [AI] Gọi AI service với `top_k = 3`, kèm `crop_code` nếu người dùng có chọn loại cây (mô hình chung, OQ-05). AI trả các lớp có khả năng cao nhất kèm xác suất, `model_version`, `inference_ms` | C4 bước 9–10; ERD 4.11, 7.4; FL; OQ-05 |
+| BR-09 | [AI] Gọi AI service với `top_k = 3`, **luôn** kèm `crop_code` của loại cây đã chọn (OQ-05 đổi 22/11: mô hình cho kết quả tốt hơn nhiều khi biết loại cây). AI trả các lớp có khả năng cao nhất kèm xác suất, `model_version`, `inference_ms` | C4 bước 9–10; ERD 4.11, 7.4; FL; OQ-05 |
 | BR-10 | [AI] AI không phản hồi trong 15 giây hoặc báo lỗi: thông báo "Hệ thống đang bận, vui lòng thử lại sau", giữ ảnh để thử lại, đặt lượt là `FAILED` và ghi `completed_at`. Thời gian chờ để trong cấu hình | C4 10.1 ("define sau"); ERD 7.4 |
 | BR-11 | Tra từng `class_code` trong `model_labels` (`is_active = true`). Có mã không tìm thấy thì coi là lỗi cấu hình: `FAILED`, ghi log mức ERROR và tạo thông báo trong ứng dụng cho mọi ADMIN, không gửi trùng cho cùng một `class_code` | ERD 6.5, 7.4; OQ-26 |
 | BR-12 | [AI] Xác định dạng kết quả (Bảng 4.4): xác suất hạng 1 < ngưỡng thì `UNCERTAIN`; nhãn hạng 1 là `HEALTHY` thì `HEALTHY`; còn lại `DISEASE`. **Một ngưỡng chung** cho mọi loại cây, để trong cấu hình; giá trị chờ nhóm AI | C4 bước 11, Bảng 4.4; ERD 6.5; OQ-06 |
@@ -72,7 +72,7 @@
 - Đọc: `model_labels`, `diseases`, `crops`, `disease_images`.
 - Thời gian phản hồi = `completed_at − created_at`, dùng cho dashboard. *(ERD D5)*
 - `model_labels` và `diagnosis_predictions.label_id` theo `data_model.md` (DC-05, DC-06 đã chốt).
-- `diagnoses.crop_id` cho phép NULL (OQ-05). NULL thì loại cây hiển thị ở lịch sử và dashboard lấy theo `crop_id` của nhãn hạng 1.
+- `diagnoses.crop_id` **NOT NULL** (OQ-05 đổi 22/11). Migration hiện tại vẫn cho phép NULL, nên feature này thêm một migration mới để đổi ràng buộc. Loại cây hiển thị ở lịch sử và dashboard lấy thẳng từ `diagnoses.crop_id`.
 
 ## 5. UI/UX requirements
 - Màn camera: khuôn "Chụp ảnh" (nền đen, ảnh tràn màn hình, không có dock). *(design/06)*
@@ -90,7 +90,7 @@
 ## 7. Điểm chưa chốt và quyết định (build-first 20/11)
 | Mã | Quyết định / trạng thái | Ảnh hưởng |
 |---|---|---|
-| OQ-05 [AI] | Đã chốt tạm: chọn loại cây là tuỳ chọn, mô hình chung. Nhóm AI xác nhận lại | US-04, BR-07, BR-09, `diagnoses.crop_id` |
+| OQ-05 [AI] | Đã chốt 22/11 (đổi từ "tuỳ chọn"): chọn loại cây là **bắt buộc**, luôn gửi `crop_code` | US-04, BR-07, BR-09, `diagnoses.crop_id` NOT NULL |
 | OQ-06 [AI] | Đã chốt một phần: một ngưỡng chung, chờ 15 giây. **Giá trị ngưỡng chờ nhóm AI** | BR-10, BR-12 |
 | OQ-07 | Hoãn: bản build dùng `diseases.severity` như BR-18 | BR-18 |
 | OQ-14 | Đã chốt: bỏ đánh giá kết quả (DIAG-07) ở bản build này | Không có US đánh giá |
@@ -100,7 +100,7 @@
 | OQ-12 | Đã chốt: bỏ đồng ý chia sẻ ảnh | Không ảnh hưởng luồng chẩn đoán |
 | DC-05, DC-06 | Đã chốt theo `data_model.md` | Mục 4 |
 | TD-01, TD-04 | Đã chốt: AWS S3; AI mock trong backend (vị trí mã AI service hoãn) | Mục 6 |
-| OQ-18 [AI] | **Chưa chốt**: suy luận trên server hay điện thoại (DIAG-09) | Ngoài phạm vi specs này |
+| OQ-18 [AI] | Đã chốt 22/11: mô hình chạy trên server, cả máy tính lẫn điện thoại đều gửi ảnh lên backend. Chạy trên điện thoại (DIAG-09) ngoài phạm vi | Mục 6 |
 
 Ngoài phạm vi specs này (Could): DIAG-08 heatmap (phụ thuộc phần diễn giải của nhóm AI), DIAG-09 chẩn đoán ngoại tuyến. DIAG-07 đánh giá kết quả (Should) bị bỏ ở bản build này (OQ-14).
 
@@ -116,3 +116,4 @@ Ngoài phạm vi specs này (Could): DIAG-08 heatmap (phụ thuộc phần diễ
 |---|---|---|---|
 | 20/11/2026 | 0.1 | Tách từ C4 v0.2, ERD-doc, FL v0.2 khi dựng workflow | Claude (chờ Dương duyệt) |
 | 20/11/2026 | 0.2 | Build-first: áp OQ-05, 06, 07, 12, 14, 15, 22, 26, DC-05, DC-06, TD-01, TD-04. Sửa US-04, BR-09, BR-11, BR-12, BR-26, BR-27. Chuyển VERIFIED | Claude theo quyết định của Dương |
+| 22/11/2026 | 0.3 | OQ-05 đổi: chọn loại cây bắt buộc. Sửa US-04, BR-07, BR-09, mục 4 (`crop_id` NOT NULL), mục 7 | Claude theo quyết định của Dương |

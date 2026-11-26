@@ -71,16 +71,16 @@ export class Diagnosis {
   })
   plant?: Relation<Plant> | null;
 
-  /** Tuỳ chọn (OQ-05). NULL thì loại cây lấy theo nhãn hạng 1. */
-  @Column({ name: 'crop_id', type: 'bigint', nullable: true })
-  cropId: number | null;
+  /** Loại cây người dùng chọn, bắt buộc (OQ-05, chốt 22/11). */
+  @Column({ name: 'crop_id', type: 'bigint' })
+  cropId: number;
 
-  @ManyToOne(() => Crop, { onDelete: 'RESTRICT', nullable: true })
+  @ManyToOne(() => Crop, { onDelete: 'RESTRICT', nullable: false })
   @JoinColumn({
     name: 'crop_id',
     foreignKeyConstraintName: 'fk_diagnoses_crop',
   })
-  crop?: Relation<Crop> | null;
+  crop?: Relation<Crop>;
 
   @Column({ name: 'original_image_url', type: 'varchar', length: 500 })
   originalImageUrl: string;

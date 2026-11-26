@@ -55,7 +55,7 @@ Ranh giới với nhóm AI: nhóm AI cung cấp endpoint suy luận, danh sách 
           ├── USER ──► Trang chủ (bệnh cây hay gặp)
           │             │
           │             ├─► Chẩn đoán: chụp/tải ảnh → chỉnh sửa (cắt vuông, xoay, sáng, tương phản)
-          │             │     → (tuỳ chọn) chọn loại cây → AI service trả top-3 + xác suất
+          │             │     → chọn loại cây (bắt buộc, OQ-05) → AI service trả top-3 + xác suất
           │             │     → backend ánh xạ nhãn + áp ngưỡng → Phát hiện bệnh | Cây khoẻ mạnh | Chưa xác định
           │             │     → tự lưu vào Lịch sử tra cứu
           │             │     → (tuỳ chọn) Lưu vào cây trồng → cập nhật tình trạng cây → gợi ý nhắc kiểm tra lại (người dùng xác nhận)
@@ -151,10 +151,13 @@ Yêu cầu phi chức năng: Chương 4 mục 4.3 mới là khung. Function List
 ## 10. Điểm còn mở
 
 Danh sách đầy đủ, có ID và mức ảnh hưởng, ở `docs/_shared/open_questions.md`. Các điểm chặn chính đã được chốt ngày 20/11 (build-first). Còn lại:
-- **OQ-06 (giá trị)**: giá trị ngưỡng độ tin cậy, chờ nhóm AI. Chặn một phần `diagnosis` và `disease_library`.
-- **OQ-05**: chọn loại cây là tuỳ chọn, dùng mô hình chung. Đây là quyết định tạm, nhóm AI xác nhận lại.
+- **OQ-06 (giá trị)**: giá trị ngưỡng độ tin cậy, chờ nhóm AI. Khi dev dùng tạm 0.6 (chốt 22/11).
+- **OQ-05** (đổi 22/11): chọn loại cây khi chẩn đoán là **bắt buộc**. Nhóm AI báo mô hình cho kết quả tốt hơn nhiều khi biết loại cây. Luôn gửi `crop_code`; `diagnoses.crop_id` NOT NULL.
+- **OQ-18** (chốt 22/11): mô hình chạy trên server. Người dùng máy tính và điện thoại đều gửi ảnh lên backend để chẩn đoán. Chạy ngay trên điện thoại (DIAG-09) ngoài phạm vi bản build.
+- **OQ-39** (chốt 22/11): bản build này tập trung giao diện máy tính; tối ưu cho điện thoại và đóng gói app làm sau, khi luồng trên máy tính đã ổn.
+- **OQ-13** (chốt 22/11): không có chức năng admin khoá tài khoản.
 - **OQ-07** (hoãn): cách hiểu "mức độ". Bản build dùng mức độ nguy hại của bệnh.
-- **OQ-13, OQ-18, OQ-19**: chưa chốt, không chặn code.
-- **OQ-01, OQ-20, OQ-21**: chỉ liên quan báo cáo.
+- **OQ-19**: nguồn nội dung phòng trị, chưa chốt, không chặn code. Khi dev dùng nội dung mẫu (OQ-36).
+- **OQ-01** (chốt 22/11): dùng tiền điều kiện "đã đăng nhập", không vẽ «include». **OQ-20, OQ-21**: chỉ liên quan báo cáo.
 - Câu thông báo cho AUTH-04 chưa có trong nguồn: soạn ở bước 6, Dương duyệt.
 - **DC-12**: cập nhật lại Chương 4, tài liệu Class/CSDL, sơ đồ ERD và UC theo quyết định 20/11.

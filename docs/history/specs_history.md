@@ -44,7 +44,7 @@ Thông tin một lượt tra cứu theo **Bảng 4.6**. Chương 4 có ghi chú 
 |---|---|---|---|---|
 | Ảnh | Ảnh chẩn đoán | Ảnh sau khi cắt, chỉnh sửa; dạng thu nhỏ ở danh sách | DS, CT | `processed_image_url` |
 | Ảnh | Ảnh gốc | Ảnh trước khi chỉnh sửa | CT | `original_image_url` |
-| Cây trồng | Loại cây | Lúa, ngô, cà chua, ớt, khoai tây | DS, CT | `crops` qua `diagnoses.crop_id`. NULL (người dùng không chọn loại cây) thì lấy theo `crop_id` của nhãn hạng 1 (OQ-05) |
+| Cây trồng | Loại cây | Lúa, ngô, cà chua, ớt, khoai tây | DS, CT | `crops` qua `diagnoses.crop_id` (luôn có, OQ-05 đổi 22/11) |
 | Cây trồng | Tên cây | Tên cây trong "Cây trồng của tôi" nếu đã gắn | DS, CT | `plants.name` |
 | Kết quả | Dạng kết quả | Phát hiện bệnh / Cây khoẻ mạnh / Chưa xác định | DS, CT | `result_type` |
 | Kết quả | Tên bệnh | Tên thường gọi | DS, CT | nhãn hạng 1 → `diseases.name` |
@@ -77,7 +77,7 @@ Thông tin một lượt tra cứu theo **Bảng 4.6**. Chương 4 có ghi chú 
 | OQ-14 | Đã chốt: bỏ đánh giá kết quả | Bảng 4.6, bộ lọc |
 | OQ-23 | Đã chốt: chỉ hiện lượt `COMPLETED` | BR-01 |
 | OQ-24 | Đã chốt: xoá không đổi tình trạng cây | BR-08 |
-| OQ-05 | Đã chốt tạm: loại cây NULL thì lấy theo nhãn hạng 1 | Bảng 4.6 |
+| OQ-05 | Đã chốt 22/11: chọn loại cây bắt buộc, loại cây lấy thẳng từ `diagnoses.crop_id` | Bảng 4.6, bộ lọc loại cây |
 | OQ-22 | Đã chốt: ADMIN xem được lịch sử của chính mình | Mục 1 |
 | OQ-07 | Hoãn: "mức độ nguy hại" dùng `diseases.severity` | Bảng 4.6 |
 
@@ -92,3 +92,4 @@ Thông tin một lượt tra cứu theo **Bảng 4.6**. Chương 4 có ghi chú 
 |---|---|---|---|
 | 20/11/2026 | 0.1 | Tách từ C4 v0.2, ERD-doc, FL v0.2 khi dựng workflow | Claude (chờ Dương duyệt) |
 | 20/11/2026 | 0.2 | Build-first: áp OQ-05, 07, 08, 14, 22, 23, 24. Sửa BR-01, BR-08, Bảng 4.6. Chuyển VERIFIED | Claude theo quyết định của Dương |
+| 22/11/2026 | 0.3 | OQ-05 đổi (chọn loại cây bắt buộc): Bảng 4.6 bỏ cách lấy loại cây theo nhãn hạng 1 | Claude theo quyết định của Dương |

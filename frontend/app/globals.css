@@ -219,3 +219,30 @@
 @utility shadow-sheet {
   box-shadow: var(--shadow-sheet);
 }
+
+/* Thước đang phân tích ảnh (design/07): sọc chạy chậm, chỉ animate transform.
+   Chu kỳ ngang của --stripe-olive (135°, 32px) là 32·√2 px nên vòng lặp liền mạch. */
+@layer components {
+  .meter--running {
+    --stripe-period: 45.255px;
+  }
+  .meter--running::before {
+    display: none;
+  }
+  .meter__run {
+    position: absolute;
+    inset: 0 0 0 calc(-1 * var(--stripe-period));
+    background: var(--stripe-olive);
+    animation: meter-run 1.6s linear infinite;
+  }
+  @keyframes meter-run {
+    to {
+      transform: translateX(var(--stripe-period));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .meter__run {
+      animation: none;
+    }
+  }
+}

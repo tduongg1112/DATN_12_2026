@@ -19,7 +19,7 @@ paths:
 ## 2. Cấu trúc mô-đun
 
 - Có **5 mô-đun**: 4 mô-đun nghiệp vụ theo [ERD] mục 8 (Tài khoản, Danh mục & nhãn mô hình, Chẩn đoán, Cây trồng & nhắc việc) và mô-đun `dashboard` [TD-08]. Không tự tạo thêm mô-đun nghiệp vụ.
-- Thư mục **(đề xuất)**:
+- Thư mục:
   ```
   backend/src/
   ├── main.ts, app.module.ts
@@ -35,8 +35,12 @@ paths:
       └── dashboard/          Chỉ đọc, không có entity riêng [TD-08]
   ```
   Trong mỗi mô-đun: `<x>.module.ts`, `<x>.controller.ts`, `<x>.service.ts`, `entities/`, `dto/`. Test đơn vị `*.spec.ts` đặt cạnh file được test.
-- Mô-đun này gọi mô-đun khác qua **service mà mô-đun kia export**, không inject repository của mô-đun khác. **(đề xuất)** Lý do: [ERD] mục 8 giữ ranh giới mô-đun để sau này tách service được.
-- **Ngoại lệ duy nhất:** mô-đun `dashboard` được chạy truy vấn tổng hợp **chỉ đọc** trực tiếp qua `DataSource` / QueryBuilder trên bảng của các mô-đun khác. Không ghi, không inject repository để ghi [TD-08].
+- Mô-đun này gọi mô-đun khác qua **service mà mô-đun kia export**, không inject repository của mô-đun khác. Lý do: [ERD] mục 8 giữ ranh giới mô-đun để sau này tách service được.
+- **Ngoại lệ (chỉ ba chỗ):** được chạy truy vấn tổng hợp **chỉ đọc** trực tiếp qua `DataSource` / QueryBuilder trên bảng của mô-đun khác. Không ghi, không inject repository của mô-đun khác.
+  - Mô-đun `dashboard` [TD-08].
+  - Truy vấn "Đang phổ biến" của thư viện bệnh, đặt trong `catalog` (`disease-trends.query.ts`), đọc `diagnoses`, `diagnosis_predictions` [TD-24]. Lý do: `diagnosis` đã import `catalog`, import ngược sẽ tạo vòng phụ thuộc mô-đun.
+  - Truy vấn lượt chẩn đoán của cây, đặt trong `plants` (`plant-reads.query.ts`): ngày chẩn đoán gần nhất, bệnh đang mắc, dòng thời gian [TD-29]. Lý do như trên: `diagnosis` đã import `plants`.
+- API quản trị cần gọi AI (đối chiếu, ngừng dùng nhãn mô hình) đặt ở `diagnosis/labels/`, ghi CSDL qua hàm do `ModelLabelService` của `catalog` export [TD-31].
 
 ## 3. Cấu hình
 
@@ -45,7 +49,7 @@ paths:
   - Tài khoản: số lần đăng nhập sai và thời gian khoá (5 lần, 15 phút [ERD][OQ-02]), JWT secret và thời hạn access/refresh, `ADMIN_EMAIL`, `ADMIN_PASSWORD` [ERD 7.1], `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` [TD-13].
   - Hạ tầng: `PORT`, `DB_*`, `REDIS_HOST`, `REDIS_PORT` [TD-03], cấu hình S3 (bucket, region, khoá truy cập, thời hạn presigned URL) [TD-01], URL frontend cho CORS.
   - Thư viện bệnh: số bệnh N và số ngày (30) cho "Đang phổ biến" [OQ-28].
-- **Giá trị ngưỡng độ tin cậy chưa có** (chờ nhóm AI, OQ-06). Không tự chọn số. Khi cần chạy thử hoặc ghi `.env.example` thì hỏi Dương. Test dùng giá trị đặt riêng trong test.
+- Ngưỡng độ tin cậy `AI_CONFIDENCE_THRESHOLD` **tạm** mặc định 0.6 trong `env.validation.ts` [TD-26] cho tới khi nhóm AI chốt (OQ-06). Không đổi sang số khác khi chưa hỏi Dương. Test dùng giá trị đặt riêng trong test.
 - Khoá mới ghi vào `backend/.env.example`. Khoá bí mật (S3, Google, JWT) để trống hoặc giá trị mẫu vô hại. **Không đọc và không sửa `.env`.**
 
 ## 4. Xác thực và phân quyền
@@ -55,7 +59,7 @@ paths:
 - Refresh token: chỉ lưu **bản băm** trong Redis kèm thời hạn. Mỗi lần refresh thì cấp token mới và huỷ token cũ (xoay vòng). Đăng xuất thì xoá khỏi Redis và xoá cookie [TD-03][FL AUTH-03].
 - Guard JWT áp mặc định cho mọi route. Chỉ mở công khai: đăng ký, đăng nhập, refresh, các route Google OAuth [C4 UC01].
 - Role guard: route của người dùng mở cho **cả `USER` và `ADMIN`** (ADMIN kế thừa chức năng USER [OQ-22]). Route quản trị (`catalog` ghi, `dashboard`) chỉ dành cho `ADMIN`.
-- **Kiểm tra quyền sở hữu** ở service: mọi người, kể cả ADMIN, chỉ đọc và sửa bản ghi có `user_id` của chính mình ở các chức năng người dùng [ERD 6.5][OQ-22]. Truy cập bản ghi của người khác thì trả về như không tồn tại **(đề xuất: 404)**.
+- **Kiểm tra quyền sở hữu** ở service: mọi người, kể cả ADMIN, chỉ đọc và sửa bản ghi có `user_id` của chính mình ở các chức năng người dùng [ERD 6.5][OQ-22]. Truy cập bản ghi của người khác thì trả về như không tồn tại (404).
 - Đổi mật khẩu phải kiểm tra mật khẩu cũ; mật khẩu mới theo quy tắc đăng ký. Tài khoản không có `password_hash` thì từ chối đổi mật khẩu [FL AUTH-04][OQ-27].
 - Gắn lượt chẩn đoán vào cây: cây phải thuộc cùng người dùng [ERD 6.5].
 
@@ -66,10 +70,10 @@ paths:
   - Thành công: trả thẳng dữ liệu, không bọc. Danh sách phân trang: `{ items, page, pageSize, total }`.
   - Lỗi: `{ statusCode, code, message, errors? }`. `code` là mã máy tiếng Anh dạng `UPPER_SNAKE` (ví dụ `AUTH_INVALID_CREDENTIALS`). `message` là câu tiếng Việt **chép đúng từ specs**. `errors[]` gồm `{ field, message }` cho lỗi theo từng trường. Dùng một exception filter chung để mọi lỗi (kể cả lỗi validation) ra đúng dạng này.
   - Swagger (`@nestjs/swagger`) chỉ bật khi không phải production, tại `/api/docs`. `docs/<feature>/api_<feature>.md` vẫn là nguồn sự thật.
-- Mọi body và query đều có DTO dùng `class-validator`. Bật `ValidationPipe` với `whitelist` và `transform` **(đề xuất)**.
+- Mọi body và query đều có DTO dùng `class-validator`. Bật `ValidationPipe` với `whitelist` và `transform`.
 - Upload ảnh: client gửi multipart lên backend, backend kiểm tra rồi lưu qua `StorageService` [TD-01]. Ảnh chẩn đoán chỉ nhận JPG, PNG, tối đa 10 MB [C4 UC02]. Kiểm tra định dạng thật (magic bytes) lẫn kích thước ở backend, không tin vào MIME hay kiểm tra phía client.
 - **Dùng chung có sẵn** (`src/common/`): `@Public()`, `@Roles()`, `@CurrentUser()`, `AppException(status, code, message, errors?)`. Lỗi nghiệp vụ luôn ném `AppException` với câu đúng specs; câu dự phòng trong `default-errors.ts` chỉ cho lỗi chung.
-- **Lưu ảnh [TD-01]:** chỉ gọi `StorageService.saveImage(buffer, folder)`. Hàm này kiểm tra JPG/PNG bằng magic bytes và giới hạn `STORAGE_MAX_BYTES`, sai thì ném `AppException` 400 với câu "Chỉ hỗ trợ ảnh JPG, PNG, dung lượng tối đa 10 MB". Không ghi đĩa hay gọi SDK trực tiếp từ service nghiệp vụ. Dev dùng `LocalDiskStorage` (ảnh phục vụ tĩnh ở `/uploads`, không kiểm quyền, chỉ dựa vào tên UUID). Khi deploy thêm bản S3: bucket riêng tư, presigned URL ngắn hạn, không để bucket public. Test thì mock `StorageService`. Cột `*_url` lưu `key` hay `url`: chưa chốt (TD-14).
+- **Lưu ảnh [TD-01]:** chỉ gọi `StorageService.saveImage(buffer, folder)`. Hàm này kiểm tra JPG/PNG bằng magic bytes và giới hạn `STORAGE_MAX_BYTES`, sai thì ném `AppException` 400 với câu "Chỉ hỗ trợ ảnh JPG, PNG, dung lượng tối đa 10 MB". Không ghi đĩa hay gọi SDK trực tiếp từ service nghiệp vụ. Dev dùng `LocalDiskStorage` (ảnh phục vụ tĩnh ở `/uploads`, không kiểm quyền, chỉ dựa vào tên UUID). Khi deploy thêm bản S3: bucket riêng tư, presigned URL ngắn hạn, không để bucket public. Test thì mock `StorageService`. Cột `*_url` lưu **khoá đối tượng**; ảnh ngoài (ảnh Google ở `users.avatar_url`) lưu URL `https://…`. Đổi giá trị cột ra URL chỉ qua `StorageService.resolveUrl` [TD-14].
 - Không để lộ stack trace, câu SQL hay việc email có tồn tại hay không ở luồng đăng nhập.
 
 ## 6. Giao dịch và quy tắc nhiều bảng
@@ -82,7 +86,7 @@ Các thao tác sau phải nằm trong **một transaction** [ERD 6.5, 7.4]:
 Quy tắc dùng chung cho nhiều mô-đun:
 - Danh sách lịch sử tra cứu và mọi chỉ số dashboard chỉ tính lượt `status = COMPLETED` [OQ-23].
 - Xoá mềm hoặc hoàn tác lượt chẩn đoán **không** làm đổi `plants.health_status` [OQ-24].
-- Loại cây của một lượt: `diagnoses.crop_id`; NULL thì lấy `crop_id` của nhãn hạng 1 [OQ-05].
+- Loại cây của một lượt: `diagnoses.crop_id`, luôn có (NOT NULL), vì chọn loại cây là bắt buộc [OQ-05, chốt 22/11].
 
 Toàn bộ quy tắc ở tầng ứng dụng (Bảng 6.5) được liệt kê ở `docs/_shared/data_model.md` mục 5.
 
@@ -90,8 +94,8 @@ Toàn bộ quy tắc ở tầng ứng dụng (Bảng 6.5) được liệt kê �
 
 - Chỉ gọi qua **một interface client duy nhất** trong mô-đun `diagnosis`, có hai bản cài chọn theo `AI_MODE` [TD-04]:
   - `http`: gọi AI service thật theo hợp đồng ở `technical_overview.md` mục 5.
-  - `mock`: trả top-3 lấy từ `model_labels` đang dùng đã seed. Ép được lỗi và timeout (qua cấu hình hoặc tham số test) để kiểm thử luồng `FAILED`.
-- Gửi `crop_code` chỉ khi người dùng có chọn loại cây. Chọn loại cây là tuỳ chọn [OQ-05].
+  - `mock`: `predict` trả top-3 lấy từ `model_labels` đang dùng; `getLabels` trả danh sách cố định `MOCK_MODEL_LABELS` (11 mã của seed dev và 3 mã chưa gán) [TD-31]. Ép được lỗi và timeout (qua cấu hình hoặc tham số test) để kiểm thử luồng `FAILED`.
+- **Luôn** gửi `crop_code` của loại cây người dùng đã chọn. Chọn loại cây là bắt buộc; request thiếu loại cây thì từ chối, không gọi AI [OQ-05, chốt 22/11]. Mô hình chạy trên server [OQ-18].
 - Ghi lượt chẩn đoán `PROCESSING` **trước** khi gọi AI. Quá thời gian chờ hoặc lỗi thì chuyển `FAILED` và ghi `completed_at` [ERD 7.4].
 - Không resize hay chuẩn hoá ảnh ở backend. Việc đó thuộc AI service [FL].
 - Gặp `class_code` không có trong `model_labels` đang dùng: chuyển `FAILED`, ghi log mức ERROR, tạo `notifications` cho mọi ADMIN (`reminder_id = NULL`). Không tạo trùng cho cùng một `class_code` [ERD 6.5][OQ-26].
@@ -102,7 +106,7 @@ Toàn bộ quy tắc ở tầng ứng dụng (Bảng 6.5) được liệt kê �
 - **Kênh duy nhất: thông báo trong ứng dụng** (bảng `notifications`). Không email, không đẩy, không khung giờ gửi [OQ-09].
 - Nhắc `SYSTEM` chỉ là **gợi ý**: backend trả gợi ý, chỉ tạo `reminders` khi người dùng xác nhận [OQ-15]. `RECHECK` theo `diseases.recheck_days` khi gắn kết quả `DISEASE`; `WATERING`, `FERTILIZING` theo chu kỳ của `crops` khi tạo cây. Không tạo trùng khi cây đã có nhắc cùng loại đang bật.
 - Cây chuyển sang `RECOVERED` thì tắt các nhắc `RECHECK` của cây đó [ERD 4.8].
-- Tần suất chạy job chưa có trong tài liệu: hỏi Dương khi làm `my_plants`.
+- Job chạy mỗi `REMINDER_JOB_INTERVAL_MINUTES` phút (mặc định 5; `REMINDER_JOB_ENABLED=false` để tắt, ví dụ khi test) bằng `setInterval` qua `SchedulerRegistry`. Mỗi lần tối đa 100 nhắc, khoá `FOR UPDATE SKIP LOCKED`, mỗi nhắc một giao dịch nhỏ. Nhắc lặp trễ nhiều chu kỳ chỉ gửi một thông báo rồi dời `next_remind_at` qua hiện tại [TD-28].
 
 ## 9. Dashboard [TD-08]
 

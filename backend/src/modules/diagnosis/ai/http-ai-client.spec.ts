@@ -4,6 +4,7 @@ import { HttpAiClient } from './http-ai-client.js';
 const input = {
   image: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
   contentType: 'image/png' as const,
+  cropCode: 'TOMATO',
 };
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -37,10 +38,7 @@ describe('HttpAiClient (hợp đồng technical_overview mục 5)', () => {
           ],
         }),
     );
-    const r = await make(fetchFn as typeof fetch).predict({
-      ...input,
-      cropCode: 'TOMATO',
-    });
+    const r = await make(fetchFn as typeof fetch).predict(input);
 
     const [url, init] = fetchFn.mock.calls[0];
     expect(url).toBe('http://ai.local:8000/predict');
@@ -59,7 +57,7 @@ describe('HttpAiClient (hợp đồng technical_overview mục 5)', () => {
     });
   });
 
-  it('không chọn loại cây thì không gửi crop_code', async () => {
+  it('luôn gửi crop_code của loại cây đã chọn (OQ-05)', async () => {
     const fetchFn = vi.fn(
       async (_u: string | URL | Request, _i?: RequestInit) =>
         json({
@@ -68,9 +66,9 @@ describe('HttpAiClient (hợp đồng technical_overview mục 5)', () => {
           predictions: [{ class_code: 'a', probability: 1 }],
         }),
     );
-    await make(fetchFn as typeof fetch).predict(input);
+    await make(fetchFn as typeof fetch).predict({ ...input, cropCode: 'RICE' });
     const form = fetchFn.mock.calls[0][1]!.body as FormData;
-    expect(form.has('crop_code')).toBe(false);
+    expect(form.get('crop_code')).toBe('RICE');
   });
 
   it.each([
@@ -118,6 +116,21 @@ describe('HttpAiClient (hợp đồng technical_overview mục 5)', () => {
         predictions: [{ class_code: 'a', probability: 1 }],
       })) as typeof fetch;
     expect(await kindOf(make(noVersion).predict(input))).toBe(
+      'invalid_response',
+    );
+  });
+
+  it('predictions trùng class_code → invalid_response', async () => {
+    const duplicated = (async () =>
+      json({
+        model_version: 'v',
+        inference_ms: 1,
+        predictions: [
+          { class_code: 'a', probability: 0.5 },
+          { class_code: 'a', probability: 0.4 },
+        ],
+      })) as typeof fetch;
+    expect(await kindOf(make(duplicated).predict(input))).toBe(
       'invalid_response',
     );
   });

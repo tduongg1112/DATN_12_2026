@@ -1,19 +1,28 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
-import { Construction } from "lucide-react"
 
-import { Card } from "@/components/ds/card-stack"
-import { EmptyState } from "@/components/ds/states"
+import { PageSkeleton } from "@/components/ds/states"
+import { DiagnoseFlow } from "@/components/diagnosis/diagnose-flow"
 import { UserPageShell } from "@/components/layout/page-shells"
+import { DIAGNOSIS_TEXT } from "@/lib/diagnosis/text"
+import { ROUTES } from "@/lib/navigation"
 
-export const metadata: Metadata = { title: "Chẩn đoán" }
+export const metadata: Metadata = { title: DIAGNOSIS_TEXT.PAGE_TITLE }
 
-/** Trang tạm, khuôn "Chi tiết (màn chụp ảnh làm ở diagnosis)". Nghiệp vụ làm ở feature diagnosis. */
+/**
+ * Chẩn đoán `/diagnose` (UC02), khuôn "Chi tiết" (design/screens/diagnosis.md S1 → S4).
+ * `?cropId=` chọn sẵn loại cây, đọc bằng `useSearchParams` nên bọc `<Suspense>`.
+ */
 export default function Page() {
   return (
-    <UserPageShell layout="detail" title="Chẩn đoán" backHref="/">
-      <Card notch>
-        <EmptyState icon={Construction} message="Trang đang được xây dựng." />
-      </Card>
+    <UserPageShell
+      layout="detail"
+      title={DIAGNOSIS_TEXT.PAGE_TITLE}
+      backHref={ROUTES.home}
+    >
+      <Suspense fallback={<PageSkeleton />}>
+        <DiagnoseFlow />
+      </Suspense>
     </UserPageShell>
   )
 }

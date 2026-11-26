@@ -1,19 +1,25 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
-import { Construction } from "lucide-react"
 
-import { Card } from "@/components/ds/card-stack"
-import { EmptyState } from "@/components/ds/states"
 import { UserPageShell } from "@/components/layout/page-shells"
+import {
+  LibraryListSkeleton,
+  LibraryListView,
+} from "@/components/library/library-list-view"
+import { LIBRARY_TEXT } from "@/lib/library/text"
 
-export const metadata: Metadata = { title: "Thư viện bệnh" }
+export const metadata: Metadata = { title: LIBRARY_TEXT.SECTION_TITLE }
 
-/** Trang tạm, khuôn "Danh sách". Nghiệp vụ làm ở feature disease_library. */
+/**
+ * S2 "Bệnh cây hay gặp" (Xem tất cả), khuôn "Danh sách" (design/screens/disease_library.md).
+ * Bộ lọc đọc từ `?crop=&q=` nên bọc Suspense (Next 16).
+ */
 export default function Page() {
   return (
-    <UserPageShell layout="list" title="Bệnh cây hay gặp">
-      <Card notch>
-        <EmptyState icon={Construction} message="Trang đang được xây dựng." />
-      </Card>
+    <UserPageShell layout="list" title={LIBRARY_TEXT.SECTION_TITLE}>
+      <Suspense fallback={<LibraryListSkeleton />}>
+        <LibraryListView />
+      </Suspense>
     </UserPageShell>
   )
 }

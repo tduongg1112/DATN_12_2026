@@ -77,17 +77,30 @@ R = trực tiếp làm · A = chịu trách nhiệm/duyệt · C = được hỏ
 
 > **Chế độ build-first (20/11/2026).** Để bắt đầu code sớm, Dương chốt toàn bộ điểm mở đang chặn trong một phiên (`docs/_shared/open_questions.md`). Specs của 7 feature được chuyển sang `VERIFIED (build-first)` **mà chưa chạy `/cross-check specs`**. Toàn bộ specs và quyết định sẽ được review lại ở giai đoạn test (bước 10–11). Cổng 2 (docs `REVIEWED`) và cổng 3 vẫn áp dụng như cũ. Nguồn gốc ngoài repo (docx, SQL, ảnh ERD/UC) chưa cập nhật theo (DC-12).
 
-Thứ tự gợi ý **(đề xuất, Dương quyết)**, dựa trên phụ thuộc dữ liệu: Function List ghi rằng UC chẩn đoán, thư viện và nhắc việc đều cần dữ liệu bệnh và mã lớp từ danh mục.
+Thứ tự gợi ý ban đầu (cột #) dựa trên phụ thuộc dữ liệu: Function List ghi rằng UC chẩn đoán, thư viện và nhắc việc đều cần dữ liệu bệnh và mã lớp từ danh mục.
+
+**Thứ tự Dương chốt 22/11, sau `auth`:** `disease_library` → `diagnosis` → `history` → `my_plants` → `catalog` → `dashboard`. Làm các trang người dùng trước. Thư viện dựng trang chi tiết bệnh mà kết quả chẩn đoán cần mở. **Dữ liệu đang dùng tạm** (nhãn mô hình, ngưỡng, nội dung bệnh, chu kỳ chăm sóc…) và mẫu gửi lại giá trị thật: [`_shared/real_data_needed.md`](_shared/real_data_needed.md). Trong lúc chưa có `catalog`, dùng dữ liệu seed dev, với nội dung bệnh mẫu do Claude soạn (OQ-36). "Lưu vào cây trồng" của `diagnosis` và `history` nối khi làm `my_plants`, vì lúc đó mới có cây để chọn. Mỗi feature duyệt hai lần như `auth`: duyệt tài liệu, rồi duyệt kế hoạch code.
 
 | # | Feature | UC | Mã chức năng (M/S/C) | Phụ thuộc | Còn chặn | specs | docs | code | test |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | TD-14 (cột `avatar_url`), TD-15 (hợp đồng refresh), TD-16; cần `GOOGLE_CLIENT_ID` khi chạy thử Google | VERIFIED (build-first) | — | — | — |
-| 2 | [`catalog`](catalog/specs_catalog.md) | UC06 | ADM-01, 02, 07 (2/0/1) | auth | — | VERIFIED (build-first) | — | — | — |
-| 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | Giá trị ngưỡng OQ-06 (chờ nhóm AI) | VERIFIED (build-first) | — | — | — |
-| 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | — | — | — |
-| 5 | [`my_plants`](my_plants/specs_my_plants.md) | UC04 | PLANT-01..06 (4/1/1), NOTI-01..04 (0/3/1) | diagnosis | — | VERIFIED (build-first) | — | — | — |
-| 6 | [`disease_library`](disease_library/specs_disease_library.md) | UC05 | LIB-01..04 (1/1/2) | catalog | Giá trị ngưỡng OQ-06 (cho "Đang phổ biến") | VERIFIED (build-first) | — | — | — |
-| 7 | [`dashboard`](dashboard/specs_dashboard.md) | UC07 | ADM-03, 04, 06 (1/1/1) | diagnosis | — | VERIFIED (build-first) | — | — | — |
+| 1 | [`auth`](auth/specs_auth.md) | UC01 | AUTH-01..05 (3/1/1) | — | Cần `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` khi chạy thử Google thật | VERIFIED (build-first) | REVIEWED (build-first) · [api](auth/api_auth.md), [db](auth/database_design_auth.md), `../design/screens/auth.md` | DONE (build-first) | — |
+| 2 | [`catalog`](catalog/specs_catalog.md) | UC06 | ADM-01, 02, 07 (2/0/1) | auth | — (nhóm AI xem phần nhãn cùng TD-19) | VERIFIED (build-first) | REVIEWED (build-first) · [api](catalog/api_catalog.md), [db](catalog/database_design_catalog.md), `../design/screens/catalog.md` | DONE (build-first 25/11) | — |
+| 3 | [`diagnosis`](diagnosis/specs_diagnosis.md) | UC02 | DIAG-01..09 (5/2/2) | auth, catalog, AI service (tạm dùng mock) | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](diagnosis/api_diagnosis.md), [db](diagnosis/database_design_diagnosis.md), `../design/screens/diagnosis.md` | DONE (build-first) | — |
+| 4 | [`history`](history/specs_history.md) | UC03 | HIST-01..03 (2/1/0) | diagnosis | — | VERIFIED (build-first) | REVIEWED (build-first) · [api](history/api_history.md), [db](history/database_design_history.md), `../design/screens/history.md` | DONE (build-first) | — |
+| 5 | [`my_plants`](my_plants/specs_my_plants.md) | UC04 | PLANT-01..06 (4/1/1), NOTI-01..04 (0/3/1) | diagnosis | — | VERIFIED (build-first) | REVIEWED (build-first) · [api](my_plants/api_my_plants.md), [db](my_plants/database_design_my_plants.md), [template](my_plants/template_my_plants.md), `../design/screens/my_plants.md` | DONE (build-first; đợt 1 23/11, đợt 2 24/11) | — |
+| 6 | [`disease_library`](disease_library/specs_disease_library.md) | UC05 | LIB-01..04 (1/1/2) | catalog | — (ngưỡng OQ-06 tạm 0.6 khi dev) | VERIFIED (build-first) | REVIEWED (build-first) · [api](disease_library/api_disease_library.md), [db](disease_library/database_design_disease_library.md), `../design/screens/disease_library.md` | DONE (build-first) | — |
+| 7 | [`dashboard`](dashboard/specs_dashboard.md) | UC07 | ADM-03, 04, 06 (1/1/1) | diagnosis | Chờ duyệt OQ-61 → OQ-65, TD-34, TD-35; nhóm AI xem nhóm chỉ số chất lượng mô hình | VERIFIED (build-first) | DRAFT (25/11) · [api](dashboard/api_dashboard.md), [db](dashboard/database_design_dashboard.md), `../design/screens/dashboard.md` | — | — |
+
+**Bước 9 `/review-code` (25/11), chạy chung cho 6 feature đã code** (auth, disease_library, diagnosis, history, my_plants, catalog): không có lỗi Chặn hay Quan trọng. Dương duyệt sửa cả 7 lỗi Nhỏ:
+
+- gom interceptor nhận ảnh về `common/storage/image-upload.interceptor.ts`;
+- chuyển `escapeLike` sang `common/sql/`;
+- thêm thời lượng token cho 2 hiệu ứng;
+- thêm test 403 cho route ghi của quản trị và ca ADMIN dùng nhắc việc;
+- ghi các chữ Claude soạn còn sót vào `screens/auth.md`, `screens/catalog.md` (chờ duyệt);
+- đổi nhãn dock thành "Bệnh cây hay gặp".
+
+Rules và `technical_overview.md` đã cập nhật theo các quyết định đã chốt: TD-14, 24, 26, 28, 29, 31, mã lỗi khoá ngoại, thời lượng chuyển động, Next.js 16.4.6, bỏ nhãn "(đề xuất)" ở các quy tắc đã áp. `dashboard` chạy `/review-code` riêng khi code xong.
 
 **Việc nền, làm trước feature đầu tiên (đề xuất):**
 
@@ -97,7 +110,7 @@ Thứ tự gợi ý **(đề xuất, Dương quyết)**, dựa trên phụ thu�
 | N2 | Chốt TD-02, TD-05, TD-06 (đóng gói, chuẩn API, cổng chạy) | `technical_overview.md` mục 10 | Xong (TD-02 hoãn, kèm ràng buộc code tương thích) |
 | N3 | Cài design system vào `frontend/` (6 bước) | `../design/08-nextjs-shadcn.md` | Xong 21/11 |
 | N4 | Migration đầu tiên, script seed, `backend/.env.example` | `.claude/rules/backend/database-rules.md` mục 6 | Xong 21/11 (dựng nền backend) |
-| N5 | Chốt hợp đồng AI service với nhóm AI (OQ-05, OQ-06, TD-04) | `technical_overview.md` mục 5 | Một phần: OQ-05 chốt tạm, OQ-06 chờ giá trị ngưỡng, TD-04 dùng mock |
+| N5 | Chốt hợp đồng AI service với nhóm AI (OQ-05, OQ-06, TD-04) | `technical_overview.md` mục 5 | Một phần: OQ-05 chốt 22/11 (bắt buộc chọn loại cây), OQ-06 tạm 0.6 khi dev, TD-04 dùng mock |
 | N6 | Gỡ `@nestjs/observe` (TD-09), đặt cổng backend 4000 (TD-06) | `open_questions.md` mục B | Xong 21/11 |
 | N7 | Nền backend: config, CSDL, entity, seed, guard, filter, StorageService, AiClient | Phiên 21/11 | Xong 21/11. Chưa có controller nghiệp vụ |
 | N8 | Nền frontend: design system, `components/ds/`, khung route 3 nhóm, `lib/api`, `lib/auth`, `lib/device`, trạng thái dùng chung | Phiên 21/11 | Xong 21/11. Chưa có màn hình nghiệp vụ |
